@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
 
 import 'package:flutter/material.dart';
@@ -13,6 +14,11 @@ class CustomTextField extends StatelessWidget {
   final TextInputType keyboardType;
   final ValueChanged<String>? onChanged;
   final Color? iconColor;
+  final String? Function(String?)? validator;
+  final VoidCallback? onSuffixTap;
+  final int? maxLength;
+  final List<TextInputFormatter>? inputFormatters;
+  final FocusNode? focusNode;
 
   const CustomTextField({
     super.key,
@@ -24,16 +30,24 @@ class CustomTextField extends StatelessWidget {
     this.keyboardType = TextInputType.text,
     this.onChanged,
     this.iconColor,
+    this.validator,
+    this.onSuffixTap,
+    this.maxLength,
+    this.inputFormatters,
+    this.focusNode,
   });
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
+    return TextFormField(
       controller: controller,
+      focusNode: focusNode,
       obscureText: obscureText,
       keyboardType: keyboardType,
       onChanged: onChanged,
-
+      maxLength: maxLength,
+      validator: validator,
+      inputFormatters: inputFormatters,
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: TextStyle(fontSize: 14),
@@ -43,7 +57,10 @@ class CustomTextField extends StatelessWidget {
             : null,
 
         suffixIcon: suffixIcon != null
-            ? Icon(suffixIcon, color: iconColor)
+            ? IconButton(
+                onPressed: onSuffixTap,
+                icon: Icon(suffixIcon, color: iconColor),
+              )
             : null,
 
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),

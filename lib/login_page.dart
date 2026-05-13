@@ -1,8 +1,14 @@
+import 'package:apartment_project/controller/login_controller.dart';
 import 'package:apartment_project/theme/app_colors.dart';
 import 'package:apartment_project/theme/app_images.dart';
+import 'package:apartment_project/utils/validators.dart';
 import 'package:apartment_project/widgets/custom_button.dart';
 import 'package:apartment_project/widgets/custom_text_field.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_instance/src/extension_instance.dart';
 
 /*class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -80,7 +86,9 @@ import 'package:flutter/material.dart';
   }
 }*/
 class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+  LoginPage({super.key});
+
+  final controller = Get.find<LoginController>();
 
   @override
   Widget build(BuildContext context) {
@@ -165,12 +173,10 @@ class LoginPage extends StatelessWidget {
                                     ),
                                   ],
                                 ),
-
                                 const SizedBox(height: 18),
                               ] else
-                                const SizedBox(height: 10),
-
-                              const LoginForm(),
+                                const SizedBox(height: 20),
+                              LoginForm(controller: controller),
                             ],
                           ),
                         ),
@@ -254,44 +260,76 @@ class LoginHeader extends StatelessWidget {
 }
 
 class LoginForm extends StatelessWidget {
-  const LoginForm({super.key});
+  final LoginController controller;
+
+  const LoginForm({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(30),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 35,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const CustomTextField(
-            prefixIcon: Icons.person_outline,
-            hintText: 'Phone',
-            iconColor: Colors.red,
-            keyboardType: TextInputType.phone,
-          ),
-          const SizedBox(height: 14),
-          const CustomTextField(
-            prefixIcon: Icons.lock_outline,
-            hintText: 'Password',
-            obscureText: true,
-            suffixIcon: Icons.visibility_off,
-            iconColor: Colors.red,
-          ),
-          const SizedBox(height: 20),
-          //   CommonButton(title: 'Login', onTap: () {}),
-          CustomButton(text: 'Login', onPressed: () {}),
-        ],
+    return Form(
+      key: controller.formKey,
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 35,
+              offset: const Offset(0, 12),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CustomTextField(
+              prefixIcon: Icons.person_outline,
+              hintText: 'Phone',
+              iconColor: Colors.red,
+              keyboardType: TextInputType.number,
+              controller: controller.phoneController,
+              onChanged: controller.onPhoneChanged,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(10),
+              ],
+              focusNode: controller.phoneFocus,
+              validator: (value) => Validator.validate(value, "Phone number"),
+            ),
+            const SizedBox(height: 14),
+            Obx(
+              () => CustomTextField(
+                prefixIcon: Icons.lock_outline,
+                hintText: 'Password',
+                obscureText: controller.obscurePassword.value,
+                suffixIcon: controller.obscurePassword.value
+                    ? Icons.visibility_off
+                    : Icons.visibility,
+                iconColor: Colors.red,
+                controller: controller.passwordController,
+                focusNode: controller.passwordFocus,
+                onSuffixTap: controller.togglePasswordVisibility,
+                validator: (value) => Validator.validate(value, "Password"),
+              ),
+            ),
+            const SizedBox(height: 20),
+            /*CustomButton(
+              text: 'Login',
+              onPressed: () {
+                controller.login();
+              },
+            ),*/
+            Obx(
+              () => CustomButton(
+                text: 'Login',
+                isLoading: controller.isLoading.value,
+                onPressed: controller.login,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -320,5 +358,3 @@ class FeatureItem extends StatelessWidget {
     );
   }
 }
-
-

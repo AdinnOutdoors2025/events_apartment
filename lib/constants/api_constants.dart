@@ -1,8 +1,6 @@
 class ApiConstants {
+  static const String baseUrl = "http://192.168.0.11:5000/admin";
 
-  static const baseUrl =
-      "https://yourapi.com/api/";
-
-  static const login = "admin/login";
-
+  static const String login = "/login";
+  static const String inspections = "inspections/getAllInspections";
 }

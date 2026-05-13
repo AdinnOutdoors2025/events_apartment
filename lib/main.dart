@@ -1,4 +1,6 @@
+import 'package:apartment_project/screens/home_screen.dart';
 import 'package:apartment_project/theme/app_colors.dart';
+import 'package:apartment_project/utils/bindings/login_binding.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -28,7 +30,11 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.red),
       ),
-      home: LoginPage(),
+      initialRoute: '/',
+      getPages: [
+        GetPage(name: '/', page: () => LoginPage(), binding: LoginBinding()),
+        GetPage(name: '/homeScreen', page: () => HomeScreen()),
+      ],
     );
   }
 }
