@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
@@ -38,6 +39,9 @@ class LoginController extends GetxController {
       backgroundColor: AppColors.red,
       colorText: Colors.white,
     );
+    if (kDebugMode) {
+      print("Login");
+    }
   }
 
   @override
