@@ -39,9 +39,9 @@ class LoginController extends GetxController {
       backgroundColor: AppColors.red,
       colorText: Colors.white,
     );
-    if (kDebugMode) {
+   /* if (kDebugMode) {
       print("Login");
-    }
+    }*/
   }
 
   @override
