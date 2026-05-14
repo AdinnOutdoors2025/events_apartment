@@ -1,3 +1,4 @@
+import 'package:apartment_project/services/storage_service.dart';
 import 'package:apartment_project/utils/snackbar.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -19,18 +20,19 @@ class DioClient {
 
     dio.interceptors.add(
       InterceptorsWrapper(
-        onRequest: (RequestOptions options, RequestInterceptorHandler handler) {
-          final requireToken = options.headers["isRequireAuth"] == true;
-          if (requireToken) {
-            //  final token = StorageService.getToken();
+        onRequest:
+            (RequestOptions options, RequestInterceptorHandler handler) async {
+              final requireToken = options.headers["isRequireAuth"] == true;
+              if (requireToken) {
+                final token = await StorageService.getToken();
 
-            /*if (token.isNotEmpty) {
-              options.headers["Authorization"] = "Bearer $token";
-            }*/
-          }
-          options.headers["Accept"] = "application/json";
-          return handler.next(options);
-        },
+                if (token != null && token.isNotEmpty) {
+                  options.headers["Authorization"] = "Bearer $token";
+                }
+              }
+              // options.headers["Accept"] = "application/json";
+              return handler.next(options);
+            },
         onResponse: (Response response, ResponseInterceptorHandler handler) {
           if (kDebugMode) {
             print("STATUS CODE => ${response.statusCode}");
@@ -63,8 +65,6 @@ class DioClient {
         },
       ),
     );
-
-    // dio.interceptors.add(LogInterceptor(requestBody: true, responseBody: true));
   }
 }
 

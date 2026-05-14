@@ -1,3 +1,4 @@
+import 'package:apartment_project/screens/bottom_nav_screen.dart';
 import 'package:apartment_project/screens/home_screen.dart';
 import 'package:apartment_project/utils/snackbar.dart';
 import 'package:flutter/cupertino.dart';
@@ -49,9 +50,9 @@ class LoginController extends GetxController {
         await StorageService.saveToken(token);
 
         AppToast.showSuccess(response["message"]);
-        Get.offAll(() => HomeScreen());
+        Get.offAll(() => BottomNavScreen());
       } else {
-       // AppToast.showError(response["message"]);
+        // AppToast.showError(response["message"]);
       }
     } catch (e) {
       AppToast.showError(e.toString());

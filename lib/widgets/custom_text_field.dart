@@ -1,10 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../theme/app_colors.dart';
-
-import 'package:flutter/material.dart';
-
 class CustomTextField extends StatelessWidget {
   final TextEditingController? controller;
   final String hintText;
@@ -51,11 +47,9 @@ class CustomTextField extends StatelessWidget {
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: TextStyle(fontSize: 14),
-
         prefixIcon: prefixIcon != null
             ? Icon(prefixIcon, color: iconColor)
             : null,
-
         suffixIcon: suffixIcon != null
             ? IconButton(
                 onPressed: onSuffixTap,
