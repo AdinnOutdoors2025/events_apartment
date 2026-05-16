@@ -6,6 +6,9 @@ class CustomButton extends StatelessWidget {
   final bool isLoading;
   final Color color;
   final double height;
+  final Color? textColor;
+  final double? radius;
+  final Color borderColor;
 
   const CustomButton({
     super.key,
@@ -14,6 +17,9 @@ class CustomButton extends StatelessWidget {
     this.isLoading = false,
     this.color = Colors.red,
     this.height = 50,
+    this.textColor,
+    this.radius,
+    this.borderColor = Colors.white,
   });
 
   @override
@@ -21,26 +27,23 @@ class CustomButton extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       height: height,
-
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
-
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
-
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(radius!),
+            side: BorderSide(color: borderColor),
           ),
         ),
-
         child: isLoading
             ? const CircularProgressIndicator(color: Colors.white)
             : Text(
                 text,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: textColor,
                 ),
               ),
       ),

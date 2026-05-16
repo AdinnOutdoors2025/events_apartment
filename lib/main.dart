@@ -1,4 +1,6 @@
 import 'package:apartment_project/screens/bottom_nav_screen.dart';
+import 'package:apartment_project/screens/upload_screen.dart';
+import 'package:apartment_project/screens/upload_summary.dart';
 import 'package:apartment_project/services/storage_service.dart';
 import 'package:apartment_project/theme/app_colors.dart';
 import 'package:apartment_project/utils/bindings/login_binding.dart';
@@ -43,6 +45,8 @@ class MyApp extends StatelessWidget {
       getPages: [
         GetPage(name: '/', page: () => LoginPage(), binding: LoginBinding()),
         GetPage(name: '/bottomNav', page: () => BottomNavScreen()),
+        GetPage(name: '/uploadScreen', page: () => UploadScreen()),
+        GetPage(name: '/uploadSummaryScreen', page: () => UploadSummary()),
       ],
     );
   }

@@ -1,4 +1,5 @@
 import 'package:apartment_project/screens/upload_screen.dart';
+import 'package:apartment_project/screens/upload_summary.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
