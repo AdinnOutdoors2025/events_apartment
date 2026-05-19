@@ -62,11 +62,6 @@ class ApiService {
         throw response.data["message"] ?? "Upload failed";
       }
     } on DioException catch (e) {
-      /*if (e.response != null) {
-        throw e.response?.data["message"] ?? "Upload failed";
-      } else {
-        throw e.message ?? "Something went wrong";
-      }*/
       throw handleError(e);
     } catch (e) {
       throw e.toString();
@@ -92,11 +87,52 @@ class ApiService {
     }
   }
 
-  Future<GetListModel> getUploadSummaryAPI({required String sessionId}) async {
+  Future<GetListModel> getApartmentSummary({
+    required int pageNumber,
+    required int count,
+    String? sessionId,
+    String? search,
+    String? location,
+    int? minRent,
+    int? maxRent,
+    int? minTG,
+    int? maxTG,
+  }) async {
     try {
+      Map<String, dynamic> body = {"pageNumber": pageNumber, "count": count};
+
+      // Optional params
+      if (sessionId != null && sessionId.isNotEmpty) {
+        body["sessionId"] = sessionId;
+      }
+
+      if (search != null && search.isNotEmpty) {
+        body["search"] = search;
+      }
+
+      if (location != null && location.isNotEmpty) {
+        body["location"] = location;
+      }
+
+      if (minRent != null) {
+        body["minRent"] = minRent;
+      }
+
+      if (maxRent != null) {
+        body["maxRent"] = maxRent;
+      }
+
+      if (minTG != null) {
+        body["minTG"] = minTG;
+      }
+
+      if (maxTG != null) {
+        body["maxTG"] = maxTG;
+      }
+
       final response = await dio.post(
         ApiConstants.getExcelList,
-        data: {"sessionId": sessionId},
+        data: body,
         options: Options(headers: {"isRequireAuth": true}),
       );
 

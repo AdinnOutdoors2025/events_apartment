@@ -129,6 +129,7 @@ class Summary {
   };
 }
 
+/*
 class UploadSummaryData {
   String? fileName;
   int? totalRows;
@@ -146,3 +147,4 @@ class UploadSummaryData {
     this.uploadedAt,
   });
 }
+*/

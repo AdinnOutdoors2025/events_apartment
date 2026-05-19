@@ -7,20 +7,19 @@ import 'package:get/get_instance/src/extension_instance.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import '../controller/bottom_nav_controller.dart';
+import '../routes/upload_navigator.dart';
 import '../services/storage_service.dart';
 import '../theme/app_colors.dart';
+import 'apartment_screen.dart';
 
 class BottomNavScreen extends StatelessWidget {
   BottomNavScreen({super.key});
 
-  final BottomNavController controller = Get.put(
-    BottomNavController(),
-    permanent: true,
-  );
+  final controller = Get.find<BottomNavController>();
 
   final List<Widget> pages = [
     const DashboardScreen(),
-    const RateCardScreen(),
+    ApartmentScreen(),
     const OrdersScreen(),
     UploadScreen(),
     const MoreScreen(),

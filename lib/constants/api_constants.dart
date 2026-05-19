@@ -4,5 +4,5 @@ class ApiConstants {
   static const String login = "/login";
   static const String uploadExcel = "/excel-upload";
   static const String recentUpload = "/excel-recent-upload";
-  static const String getExcelList = "/apartment-get-list";
+  static const String getExcelList = "/apartment-list";
 }

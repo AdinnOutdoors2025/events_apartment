@@ -1,12 +1,15 @@
 import 'dart:io';
 import 'package:apartment_project/utils/snackbar.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import '../model/get_list_model.dart';
 import '../model/recent_upload_model.dart';
 import '../model/upload_file_model.dart';
+import '../screens/upload_summary.dart';
 import '../services/api_service.dart';
+import 'apartment_controller.dart';
 
 class UploadController extends GetxController {
   final ApiService apiService = ApiService();
@@ -14,16 +17,29 @@ class UploadController extends GetxController {
   Rx<File?> selectedFile = Rx<File?>(null);
 
   RxBool isLoading = false.obs;
+
   RxBool isRecentLoading = false.obs;
+  RxBool isPaginationLoading = false.obs;
+
+  int currentPage = 1;
+  int totalPages = 1;
+  final ScrollController scrollController = ScrollController();
   RxBool isSummaryLoading = false.obs;
   RxList<Session> recentUploads = <Session>[].obs;
-  Rx<Datas?> summaryData = Rx<Datas?>(null);
 
   @override
   void onInit() {
     super.onInit();
-
     getRecentUploads();
+
+    scrollController.addListener(() {
+      if (scrollController.position.pixels >=
+              scrollController.position.maxScrollExtent - 200 &&
+          !isPaginationLoading.value &&
+          currentPage < totalPages) {
+        getRecentUploads(isLoadMore: true);
+      }
+    });
   }
 
   Future<void> pickExcelFile() async {
@@ -62,19 +78,17 @@ class UploadController extends GetxController {
         if (kDebugMode) {
           print(response.message);
         }
+        final apartmentController = Get.find<ApartmentController>();
+
+        await apartmentController.getApartments(
+          sessionId: response.data?.sessionId ?? "",
+        );
+
         await Get.toNamed(
           '/uploadSummaryScreen',
-          arguments: {
-            "isNewUpload": true,
-            "summaryData": UploadSummaryData(
-              fileName: response.data?.fileName,
-              totalRows: response.data?.totalRows,
-              insertedCount: response.data?.insertedCount,
-              updatedCount: response.data?.updatedCount,
-              skippedCount: response.data?.skippedCount,
-            ),
-          },
+          arguments: {"isNewUpload": true, "uploadData": response.data},
         );
+
         await getRecentUploads();
       } else {
         AppToast.showError(response.message ?? "Upload failed");
@@ -86,31 +100,46 @@ class UploadController extends GetxController {
     }
   }
 
-  Future<void> getRecentUploads() async {
+  Future<void> getRecentUploads({bool isLoadMore = false}) async {
     try {
-      isRecentLoading.value = true;
+      if (isLoadMore) {
+        isPaginationLoading.value = true;
+        currentPage++;
+      } else {
+        isRecentLoading.value = true;
+        currentPage = 1;
+        recentUploads.clear();
+      }
 
       final RecentUploadModel response = await apiService.recentUploadAPI(
-        pageNumber: 1,
+        pageNumber: currentPage,
         count: 10,
       );
 
       if (response.success == true) {
-        recentUploads.value = response.data?.sessions ?? [];
+        totalPages = response.data?.totalPages ?? 1;
+
+        final List<Session> newData = response.data?.sessions ?? [];
+
+        recentUploads.addAll(newData);
       }
     } catch (e) {
       AppToast.showError(e.toString());
     } finally {
       isRecentLoading.value = false;
+      isPaginationLoading.value = false;
     }
   }
 
+  /*
   Future<void> getUploadSummary({required String sessionId}) async {
     try {
       isSummaryLoading.value = true;
 
-      final response = await apiService.getUploadSummaryAPI(
+      final response = await apiService.getApartmentSummary(
         sessionId: sessionId,
+        pageNumber: 1,
+        count: 10,
       );
 
       if (response.success == true) {
@@ -126,4 +155,5 @@ class UploadController extends GetxController {
       isSummaryLoading.value = false;
     }
   }
+*/
 }

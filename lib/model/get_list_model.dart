@@ -23,14 +23,7 @@ class Datas {
   int? count;
   int? totalCount;
   int? totalPages;
-  String? updatedBy;
-  String? sessionId;
-  String? fileName;
-  String? uploadedAt;
-  int? insertedCount;
-  int? updatedCount;
-  int? skippedCount;
-  int? totalRows;
+  LatestFile? file;
   List<String>? locationFilter;
   List<String>? cityFilter;
   List<Apartment>? apartments;
@@ -40,14 +33,7 @@ class Datas {
     this.count,
     this.totalCount,
     this.totalPages,
-    this.updatedBy,
-    this.sessionId,
-    this.fileName,
-    this.uploadedAt,
-    this.insertedCount,
-    this.updatedCount,
-    this.skippedCount,
-    this.totalRows,
+    this.file,
     this.locationFilter,
     this.cityFilter,
     this.apartments,
@@ -58,14 +44,7 @@ class Datas {
     count: json["count"],
     totalCount: json["totalCount"],
     totalPages: json["totalPages"],
-    updatedBy: json["updatedBy"],
-    sessionId: json["sessionId"],
-    fileName: json["fileName"],
-    uploadedAt: json["uploadedAt"],
-    insertedCount: json["insertedCount"],
-    updatedCount: json["updatedCount"],
-    skippedCount: json["skippedCount"],
-    totalRows: json["totalRows"],
+    file: json["file"] == null ? null : LatestFile.fromJson(json["file"]),
     locationFilter: json["locationFilter"] == null
         ? []
         : List<String>.from(json["locationFilter"]!.map((x) => x)),
@@ -84,14 +63,7 @@ class Datas {
     "count": count,
     "totalCount": totalCount,
     "totalPages": totalPages,
-    "updatedBy": updatedBy,
-    "sessionId": sessionId,
-    "fileName": fileName,
-    "uploadedAt": uploadedAt,
-    "insertedCount": insertedCount,
-    "updatedCount": updatedCount,
-    "skippedCount": skippedCount,
-    "totalRows": totalRows,
+    "file": file?.toJson(),
     "locationFilter": locationFilter == null
         ? []
         : List<dynamic>.from(locationFilter!.map((x) => x)),
@@ -113,6 +85,7 @@ class Apartment {
   String? apartmentAddress;
   String? city;
   String? location;
+  PriceRange? priceRange;
   String? jioLocation;
   String? photo;
   String? apartmentSummary;
@@ -126,12 +99,12 @@ class Apartment {
   int? approxPeopleCount;
   int? startingTgValues;
   List<ExistingEventsHistory>? existingEventsHistory;
-  int? perDayRent;
+  String? perDayRent;
   String? updatedBy;
   DateTime? createdAt;
   DateTime? updatedAt;
   int? v;
-  String? status;
+  String? sessionStatus;
 
   Apartment({
     this.id,
@@ -142,6 +115,7 @@ class Apartment {
     this.apartmentAddress,
     this.city,
     this.location,
+    this.priceRange,
     this.jioLocation,
     this.photo,
     this.apartmentSummary,
@@ -160,7 +134,7 @@ class Apartment {
     this.createdAt,
     this.updatedAt,
     this.v,
-    this.status,
+    this.sessionStatus,
   });
 
   factory Apartment.fromJson(Map<String, dynamic> json) => Apartment(
@@ -176,6 +150,9 @@ class Apartment {
     apartmentAddress: json["apartmentAddress"],
     city: json["city"],
     location: json["location"],
+    priceRange: json["priceRange"] == null
+        ? null
+        : PriceRange.fromJson(json["priceRange"]),
     jioLocation: json["jioLocation"],
     photo: json["photo"],
     apartmentSummary: json["apartmentSummary"],
@@ -208,7 +185,7 @@ class Apartment {
         ? null
         : DateTime.parse(json["updatedAt"]),
     v: json["__v"],
-    status: json["status"],
+    sessionStatus: json["sessionStatus"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -220,6 +197,7 @@ class Apartment {
     "apartmentAddress": apartmentAddress,
     "city": city,
     "location": location,
+    "priceRange": priceRange?.toJson(),
     "jioLocation": jioLocation,
     "photo": photo,
     "apartmentSummary": apartmentSummary,
@@ -242,7 +220,30 @@ class Apartment {
     "createdAt": createdAt?.toIso8601String(),
     "updatedAt": updatedAt?.toIso8601String(),
     "__v": v,
-    "status": status,
+    "sessionStatus": sessionStatus,
+  };
+}
+
+class PriceRange {
+  int? minTG;
+  int? maxTG;
+  int? minRent;
+  int? maxRent;
+
+  PriceRange({this.minTG, this.maxTG, this.minRent, this.maxRent});
+
+  factory PriceRange.fromJson(Map<String, dynamic> json) => PriceRange(
+    minTG: json["minTG"],
+    maxTG: json["maxTG"],
+    minRent: json["minRent"],
+    maxRent: json["maxRent"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "minTG": minTG,
+    "maxTG": maxTG,
+    "minRent": minRent,
+    "maxRent": maxRent,
   };
 }
 
@@ -334,5 +335,47 @@ class ExistingEventsHistory {
     "eventDate": eventDate,
     "remarks": remarks,
     "_id": id,
+  };
+}
+
+class LatestFile {
+  String? sessionId;
+  String? fileName;
+  int? totalRows;
+  int? insertedCount;
+  int? updatedCount;
+  int? skippedCount;
+  DateTime? uploadedAt;
+
+  LatestFile({
+    this.sessionId,
+    this.fileName,
+    this.totalRows,
+    this.insertedCount,
+    this.updatedCount,
+    this.skippedCount,
+    this.uploadedAt,
+  });
+
+  factory LatestFile.fromJson(Map<String, dynamic> json) => LatestFile(
+    sessionId: json["sessionId"],
+    fileName: json["fileName"],
+    totalRows: json["totalRows"],
+    insertedCount: json["insertedCount"],
+    updatedCount: json["updatedCount"],
+    skippedCount: json["skippedCount"],
+    uploadedAt: json["uploadedAt"] == null
+        ? null
+        : DateTime.parse(json["uploadedAt"]),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "sessionId": sessionId,
+    "fileName": fileName,
+    "totalRows": totalRows,
+    "insertedCount": insertedCount,
+    "updatedCount": updatedCount,
+    "skippedCount": skippedCount,
+    "uploadedAt": uploadedAt?.toIso8601String(),
   };
 }

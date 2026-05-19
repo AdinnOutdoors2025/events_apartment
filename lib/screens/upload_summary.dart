@@ -1,40 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_instance/src/extension_instance.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
-import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:lottie/lottie.dart';
-import '../model/upload_file_model.dart';
+import '../controller/apartment_controller.dart';
+import '../controller/upload_summary_controller.dart';
 import '../theme/app_colors.dart';
 import '../widgets/custom_button.dart';
 
 class UploadSummary extends StatelessWidget {
   UploadSummary({super.key});
 
-  final bool isNewUpload = Get.arguments["isNewUpload"] ?? false;
-  final UploadSummaryData summaryData = Get.arguments["summaryData"];
-
-  late final List<Map<String, dynamic>> summaryList = [
-    {
-      "title": "Total Rows",
-      "value": "${summaryData.totalRows ?? 0}",
-      "color": Colors.deepPurple,
-    },
-    {
-      "title": "Added",
-      "value": "${summaryData.insertedCount ?? 0}",
-      "color": Colors.green,
-    },
-    {
-      "title": "Updated",
-      "value": "${summaryData.updatedCount ?? 0}",
-      "color": Colors.blue,
-    },
-    {
-      "title": "Duplicate",
-      "value": "${summaryData.skippedCount ?? 0}",
-      "color": Colors.orange,
-    },
-  ];
+  final controller = Get.find<UploadSummaryController>();
 
   @override
   Widget build(BuildContext context) {
@@ -60,33 +37,36 @@ class UploadSummary extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (isNewUpload) ...[
-              const SizedBox(height: 20),
-
-              /*  Center(
-                child: Container(
-                  width: 80,
-                  height: 80,
-                  decoration: const BoxDecoration(
-                    color: Colors.green,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.check, color: Colors.white, size: 40),
-                ),
-              ),*/
+            if (controller.isNewUpload) ...[
               Center(
                 child: SizedBox(
-                  height: 180,
-                  width: 180,
-                  child: Lottie.asset(
-                    'assets/lottie/completed.json',
-                    repeat: false,
-                    fit: BoxFit.contain,
+                  height: 150,
+                  width: 150,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Lottie.asset(
+                        'assets/lottie/completed.json',
+                        repeat: false,
+                        fit: BoxFit.contain,
+                      ),
+                      Container(
+                        width: 70,
+                        height: 70,
+                        decoration: const BoxDecoration(
+                          color: Colors.green,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.check,
+                          color: Colors.white,
+                          size: 30,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-
-              const SizedBox(height: 20),
 
               const Center(
                 child: Text(
@@ -108,9 +88,9 @@ class UploadSummary extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: 25),
+              const SizedBox(height: 15),
             ],
-            if (!isNewUpload) ...[
+            if (!controller.isNewUpload) ...[
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
@@ -134,7 +114,7 @@ class UploadSummary extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "${summaryData.fileName}",
+                            controller.fileName,
                             style: TextStyle(
                               fontWeight: FontWeight.w700,
                               fontSize: 14,
@@ -142,12 +122,12 @@ class UploadSummary extends StatelessWidget {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            "${summaryData.uploadedAt}",
+                            controller.uploadedAt,
                             style: TextStyle(color: Colors.grey.shade600),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            "${summaryData.totalRows ?? 0} rows",
+                            '${controller.totalRows} rows',
                             style: TextStyle(
                               color: Colors.grey.shade700,
                               fontWeight: FontWeight.w500,
@@ -159,22 +139,22 @@ class UploadSummary extends StatelessWidget {
                   ],
                 ),
               ),
+              const SizedBox(height: 15),
             ],
-
-            const SizedBox(height: 15),
 
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: summaryList.length,
+              itemCount: controller.summaryList.length,
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                crossAxisSpacing: 14,
-                mainAxisSpacing: 14,
-                childAspectRatio: 1.15,
+                crossAxisSpacing: 20,
+                mainAxisSpacing: 20,
+                childAspectRatio: 1.20,
               ),
+              padding: EdgeInsets.all(5),
               itemBuilder: (context, index) {
-                final item = summaryList[index];
+                final item = controller.summaryList[index];
                 return SummaryBox(
                   title: item["title"],
                   value: item["value"],
@@ -182,16 +162,24 @@ class UploadSummary extends StatelessWidget {
                 );
               },
             ),
-
+            SizedBox(height: 15),
             CustomButton(
               text: 'View Added Data',
-              onPressed: () {},
               color: Colors.white,
               textColor: AppColors.red,
               radius: 12,
               borderColor: AppColors.red,
-              //    isLoading: controller.isLoading.value,
-              //     onPressed: controller.login,
+              onPressed: () async {
+                Get.toNamed('/apartmentScreen');
+                /*  final apartmentController = Get.find<ApartmentController>();
+
+                // keep session data
+                await apartmentController.getApartments(
+                  sessionId: apartmentController.currentSessionId,
+                );
+
+                Get.toNamed('/apartmentScreen');*/
+              },
             ),
             SizedBox(height: 10),
             CustomButton(
@@ -200,10 +188,7 @@ class UploadSummary extends StatelessWidget {
               color: Colors.white,
               textColor: AppColors.red,
               radius: 12,
-
               borderColor: AppColors.red,
-              //    isLoading: controller.isLoading.value,
-              //     onPressed: controller.login,
             ),
           ],
         ),
@@ -248,7 +233,7 @@ class SummaryBox extends StatelessWidget {
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
 
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
 
           Text(
             value,
