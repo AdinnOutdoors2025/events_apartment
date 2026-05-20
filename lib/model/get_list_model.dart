@@ -26,6 +26,7 @@ class Datas {
   LatestFile? file;
   List<String>? locationFilter;
   List<String>? cityFilter;
+  PriceRange? priceRange;
   List<Apartment>? apartments;
 
   Datas({
@@ -36,6 +37,7 @@ class Datas {
     this.file,
     this.locationFilter,
     this.cityFilter,
+    this.priceRange,
     this.apartments,
   });
 
@@ -51,6 +53,9 @@ class Datas {
     cityFilter: json["cityFilter"] == null
         ? []
         : List<String>.from(json["cityFilter"]!.map((x) => x)),
+    priceRange: json["priceRange"] == null
+        ? null
+        : PriceRange.fromJson(json["priceRange"]),
     apartments: json["apartments"] == null
         ? []
         : List<Apartment>.from(
@@ -70,6 +75,7 @@ class Datas {
     "cityFilter": cityFilter == null
         ? []
         : List<dynamic>.from(cityFilter!.map((x) => x)),
+    "priceRange": priceRange?.toJson(),
     "apartments": apartments == null
         ? []
         : List<dynamic>.from(apartments!.map((x) => x.toJson())),
@@ -85,7 +91,6 @@ class Apartment {
   String? apartmentAddress;
   String? city;
   String? location;
-  PriceRange? priceRange;
   String? jioLocation;
   String? photo;
   String? apartmentSummary;
@@ -115,7 +120,6 @@ class Apartment {
     this.apartmentAddress,
     this.city,
     this.location,
-    this.priceRange,
     this.jioLocation,
     this.photo,
     this.apartmentSummary,
@@ -150,9 +154,6 @@ class Apartment {
     apartmentAddress: json["apartmentAddress"],
     city: json["city"],
     location: json["location"],
-    priceRange: json["priceRange"] == null
-        ? null
-        : PriceRange.fromJson(json["priceRange"]),
     jioLocation: json["jioLocation"],
     photo: json["photo"],
     apartmentSummary: json["apartmentSummary"],
@@ -197,7 +198,6 @@ class Apartment {
     "apartmentAddress": apartmentAddress,
     "city": city,
     "location": location,
-    "priceRange": priceRange?.toJson(),
     "jioLocation": jioLocation,
     "photo": photo,
     "apartmentSummary": apartmentSummary,

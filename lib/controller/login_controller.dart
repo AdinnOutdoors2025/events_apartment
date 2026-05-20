@@ -50,7 +50,7 @@ class LoginController extends GetxController {
         await StorageService.saveToken(token);
 
         AppToast.showSuccess(response["message"]);
-        Get.offAll(() => BottomNavScreen());
+        Get.offAllNamed('/bottomNav');
       } else {
         // AppToast.showError(response["message"]);
       }

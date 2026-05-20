@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -7,6 +8,9 @@ import '../services/api_service.dart';
 import '../utils/snackbar.dart';
 
 class ApartmentController extends GetxController {
+  ApartmentController({this.initialSessionId});
+
+  final String? initialSessionId;
   final ApiService apiService = ApiService();
   Rxn<Datas> apartmentData = Rxn<Datas>();
   RxList<Apartment> apartments = <Apartment>[].obs;
@@ -14,17 +18,29 @@ class ApartmentController extends GetxController {
   RxBool isPaginationLoading = false.obs;
   int page = 1;
   int totalPages = 1;
-  String? currentSessionId;
+
+  // String? currentSessionId;
+  final RxnString currentSessionId = RxnString();
   final ScrollController scrollController = ScrollController();
+  final isFilterApplied = false.obs;
   final selectedLocation = RxnString();
   final selectedCity = RxnString();
-  final campaignPriceRange = const RangeValues(5000, 15000).obs;
-  final tgValueRange = const RangeValues(40, 120).obs;
+
+  final locations = <String>[].obs;
+  final cities = <String>[].obs;
+
+  final minCampaignRent = 0.0.obs;
+  final maxCampaignRent = 0.0.obs;
+  final campaignPriceRange = const RangeValues(0, 0).obs;
+
+  final minTG = 0.0.obs;
+  final maxTG = 0.0.obs;
+  final tgValueRange = const RangeValues(0, 0).obs;
 
   @override
   void onInit() {
     super.onInit();
-
+    currentSessionId.value = initialSessionId;
     scrollController.addListener(() {
       if (scrollController.position.pixels >=
               scrollController.position.maxScrollExtent - 200 &&
@@ -34,25 +50,38 @@ class ApartmentController extends GetxController {
       }
     });
 
-    getApartments();
+    getApartments(sessionId: initialSessionId);
   }
 
-  final locations = [
-    'Anna Nagar',
-    'T. Nagar',
-    'Velachery',
-    'Porur',
-    'OMR',
-    'ECR',
-  ];
+  bool get isSessionBasedData {
+    return currentSessionId.value?.isNotEmpty ?? false;
+  }
 
-  final cities = ['Chennai', 'Coimbatore', 'Madurai', 'Trichy', 'Salem'];
+  bool get hasAnyFilterSelected {
+    final rent = campaignPriceRange.value;
+    final tg = tgValueRange.value;
+
+    final isRentDefault =
+        rent.start.round() == minCampaignRent.value.round() &&
+        rent.end.round() == maxCampaignRent.value.round();
+
+    final isTGDefault =
+        tg.start.round() == minTG.value.round() &&
+        tg.end.round() == maxTG.value.round();
+
+    return selectedLocation.value != null ||
+        selectedCity.value != null ||
+        !isRentDefault ||
+        !isTGDefault;
+  }
 
   Future<void> getApartments({
     bool isLoadMore = false,
+    bool updateFilterData = true,
     String? sessionId,
     String? search,
     String? location,
+    String? city,
     int? minRent,
     int? maxRent,
     int? minTG,
@@ -60,9 +89,35 @@ class ApartmentController extends GetxController {
   }) async {
     try {
       if (sessionId != null && sessionId.isNotEmpty) {
-        currentSessionId = sessionId;
+        currentSessionId.value = sessionId;
       }
       final selectedSessionId = currentSessionId;
+      final bool useCurrentFilters = isFilterApplied.value && sessionId == null;
+      if (kDebugMode) {
+        print("usecurrentfilters: $useCurrentFilters");
+      }
+      final requestLocation =
+          location ?? (useCurrentFilters ? selectedLocation.value : null);
+      if (kDebugMode) {
+        print("requestLocation: $requestLocation");
+      }
+      final requestCity =
+          city ?? (useCurrentFilters ? selectedCity.value : null);
+
+      final requestMinRent =
+          minRent ??
+          (useCurrentFilters ? campaignPriceRange.value.start.round() : null);
+
+      final requestMaxRent =
+          maxRent ??
+          (useCurrentFilters ? campaignPriceRange.value.end.round() : null);
+
+      final requestMinTG =
+          minTG ??
+          (useCurrentFilters ? tgValueRange.value.start.round() : null);
+
+      final requestMaxTG =
+          maxTG ?? (useCurrentFilters ? tgValueRange.value.end.round() : null);
 
       if (isLoadMore) {
         isPaginationLoading.value = true;
@@ -76,13 +131,14 @@ class ApartmentController extends GetxController {
       final response = await apiService.getApartmentSummary(
         pageNumber: page,
         count: 10,
-        sessionId: selectedSessionId,
+        sessionId: selectedSessionId.value,
         search: search,
-        location: location,
-        minRent: minRent,
-        maxRent: maxRent,
-        minTG: minTG,
-        maxTG: maxTG,
+        location: requestLocation,
+        city: requestCity,
+        minRent: requestMinRent,
+        maxRent: requestMaxRent,
+        minTG: requestMinTG,
+        maxTG: requestMaxTG,
       );
 
       if (response.success == true) {
@@ -90,6 +146,10 @@ class ApartmentController extends GetxController {
         totalPages = response.data?.totalPages ?? 1;
 
         apartments.addAll(response.data?.apartments ?? []);
+
+        if (!isLoadMore && updateFilterData && !isFilterApplied.value) {
+          setFilterDataFromApi(response.data);
+        }
       }
     } catch (e) {
       AppToast.showError(e.toString());
@@ -100,18 +160,127 @@ class ApartmentController extends GetxController {
   }
 
   void clearSessionFilter() {
-    currentSessionId = null;
+    currentSessionId.value = null;
   }
 
   void resetFilters() {
     selectedLocation.value = null;
     selectedCity.value = null;
-    campaignPriceRange.value = const RangeValues(5000, 15000);
-    tgValueRange.value = const RangeValues(40, 120);
+
+    campaignPriceRange.value = RangeValues(
+      minCampaignRent.value,
+      maxCampaignRent.value,
+    );
+
+    tgValueRange.value = RangeValues(minTG.value, maxTG.value);
+  }
+
+  void setFilterDataFromApi(Datas? data) {
+    locations.assignAll(data?.locationFilter ?? []);
+    cities.assignAll(data?.cityFilter ?? []);
+
+    final priceRange = data?.priceRange;
+
+    if (priceRange == null) return;
+
+    final apiMinRent = priceRange.minRent ?? 0;
+    final apiMaxRent = priceRange.maxRent ?? 0;
+    final apiMinTG = priceRange.minTG ?? 0;
+    final apiMaxTG = priceRange.maxTG ?? 0;
+
+    if (apiMaxRent > apiMinRent) {
+      minCampaignRent.value = apiMinRent.toDouble();
+      maxCampaignRent.value = apiMaxRent.toDouble();
+
+      campaignPriceRange.value = RangeValues(
+        minCampaignRent.value,
+        maxCampaignRent.value,
+      );
+    }
+
+    if (apiMaxTG > apiMinTG) {
+      minTG.value = apiMinTG.toDouble();
+      maxTG.value = apiMaxTG.toDouble();
+
+      tgValueRange.value = RangeValues(minTG.value, maxTG.value);
+    }
   }
 
   void applyFilterFromSheet() {
-    // Here you can filter your apartment list
-    // based on selectedLocation, selectedCity, price range, and TG value range.
+    isFilterApplied.value = hasAnyFilterSelected;
+
+    if (!isFilterApplied.value) {
+      getApartments(updateFilterData: true);
+      return;
+    }
+
+    final rentRange = campaignPriceRange.value;
+    final tgRange = tgValueRange.value;
+
+    getApartments(
+      updateFilterData: false,
+      location: selectedLocation.value,
+      city: selectedCity.value,
+      minRent: rentRange.start.round(),
+      maxRent: rentRange.end.round(),
+      minTG: tgRange.start.round(),
+      maxTG: tgRange.end.round(),
+    );
+  }
+
+  void clearFiltersAndFetch() {
+    resetFilters();
+    isFilterApplied.value = false;
+    getApartments(updateFilterData: true);
+  }
+
+  int get appliedFilterCount {
+    int count = 0;
+
+    if (selectedLocation.value != null) {
+      count++;
+    }
+
+    if (selectedCity.value != null) {
+      count++;
+    }
+
+    final rent = campaignPriceRange.value;
+
+    final isRentDefault =
+        rent.start.round() == minCampaignRent.value.round() &&
+        rent.end.round() == maxCampaignRent.value.round();
+
+    if (!isRentDefault) {
+      count++;
+    }
+
+    final tg = tgValueRange.value;
+
+    final isTGDefault =
+        tg.start.round() == minTG.value.round() &&
+        tg.end.round() == maxTG.value.round();
+
+    if (!isTGDefault) {
+      count++;
+    }
+
+    return count;
+  }
+
+  Future<void> removeSessionFilter() async {
+    currentSessionId.value = null;
+
+    resetFilters();
+
+    isFilterApplied.value = false;
+
+    await getApartments(updateFilterData: true);
+  }
+
+  @override
+  void onClose() {
+    scrollController.dispose();
+    super.onClose();
   }
 }

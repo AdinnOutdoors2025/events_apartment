@@ -93,6 +93,7 @@ class ApiService {
     String? sessionId,
     String? search,
     String? location,
+    String? city,
     int? minRent,
     int? maxRent,
     int? minTG,
@@ -112,6 +113,9 @@ class ApiService {
 
       if (location != null && location.isNotEmpty) {
         body["location"] = location;
+      }
+      if (city != null && city.isNotEmpty) {
+        body["city"] = city;
       }
 
       if (minRent != null) {

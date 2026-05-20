@@ -1,5 +1,6 @@
 import 'package:apartment_project/screens/apartment_screen.dart';
 import 'package:apartment_project/screens/bottom_nav_screen.dart';
+import 'package:apartment_project/screens/upload_apartment_screen.dart';
 import 'package:apartment_project/screens/upload_screen.dart';
 import 'package:apartment_project/screens/upload_summary.dart';
 import 'package:apartment_project/services/storage_service.dart';
@@ -62,6 +63,10 @@ class MyApp extends StatelessWidget {
           binding: UploadSummaryBinding(),
         ),
         GetPage(name: '/apartmentScreen', page: () => ApartmentScreen()),
+        GetPage(
+          name: '/uploadApartmentScreen',
+          page: () => UploadApartmentScreen(),
+        ),
       ],
     );
   }

@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-
 import '../../controller/apartment_controller.dart';
 import '../../controller/bottom_nav_controller.dart';
 import '../../controller/upload_controller.dart';

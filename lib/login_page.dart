@@ -325,7 +325,9 @@ class LoginForm extends StatelessWidget {
               () => CustomButton(
                 text: 'Login',
                 isLoading: controller.isLoading.value,
-                onPressed: controller.login,radius: 14,
+                onPressed: controller.login,
+                radius: 14,
+                textColor: Colors.white,
               ),
             ),
           ],

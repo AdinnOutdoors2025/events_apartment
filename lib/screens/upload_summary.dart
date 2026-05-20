@@ -169,17 +169,28 @@ class UploadSummary extends StatelessWidget {
               textColor: AppColors.red,
               radius: 12,
               borderColor: AppColors.red,
-              onPressed: () async {
-                Get.toNamed('/apartmentScreen');
-                /*  final apartmentController = Get.find<ApartmentController>();
-
+              /*onPressed: () async {
+                //  Get.toNamed('/apartmentScreen');
+                final apartmentController = Get.find<ApartmentController>();
+                apartmentController.resetFilters();
+                apartmentController.isFilterApplied.value = false;
                 // keep session data
                 await apartmentController.getApartments(
-                  sessionId: apartmentController.currentSessionId,
+                  sessionId: controller.sessionId,
+                  updateFilterData: true,
                 );
 
-                Get.toNamed('/apartmentScreen');*/
+                Get.toNamed('/apartmentScreen');
+              },*/
+              onPressed: () async {
+                Get.toNamed(
+                  '/uploadApartmentScreen',
+                  arguments: {
+                    "sessionId": controller.sessionId,
+                  },
+                );
               },
+
             ),
             SizedBox(height: 10),
             CustomButton(

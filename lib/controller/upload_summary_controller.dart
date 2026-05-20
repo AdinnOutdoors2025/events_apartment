@@ -10,7 +10,7 @@ class UploadSummaryController extends GetxController {
   late int updatedCount;
   late int skippedCount;
   late String uploadedAt;
-
+  late String sessionId;
   late bool isNewUpload;
 
   late List<Map<String, dynamic>> summaryList;
@@ -30,28 +30,20 @@ class UploadSummaryController extends GetxController {
 
     if (isNewUpload) {
       fileName = uploadData?.fileName ?? "";
-
       totalRows = uploadData?.totalRows ?? 0;
-
       insertedCount = uploadData?.insertedCount ?? 0;
-
       updatedCount = uploadData?.updatedCount ?? 0;
-
       skippedCount = uploadData?.skippedCount ?? 0;
-
       uploadedAt = "";
+      sessionId = uploadData?.sessionId ?? "";
     } else {
       fileName = listData?.file?.fileName ?? "";
-
       totalRows = listData?.file?.totalRows ?? 0;
-
       insertedCount = listData?.file?.insertedCount ?? 0;
-
       updatedCount = listData?.file?.updatedCount ?? 0;
-
       skippedCount = listData?.file?.skippedCount ?? 0;
-
       uploadedAt = listData?.file?.uploadedAt?.toString() ?? "";
+      sessionId = listData?.file?.sessionId ?? "";
     }
 
     summaryList = [
