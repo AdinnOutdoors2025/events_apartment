@@ -9,6 +9,7 @@ class CustomButton extends StatelessWidget {
   final Color? textColor;
   final double? radius;
   final Color borderColor;
+  final double? textFontSize;
 
   const CustomButton({
     super.key,
@@ -20,6 +21,7 @@ class CustomButton extends StatelessWidget {
     this.textColor,
     this.radius,
     this.borderColor = Colors.white,
+    this.textFontSize,
   });
 
   @override
@@ -41,7 +43,7 @@ class CustomButton extends StatelessWidget {
             : Text(
                 text,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: textFontSize,
                   fontWeight: FontWeight.w600,
                   color: textColor,
                 ),

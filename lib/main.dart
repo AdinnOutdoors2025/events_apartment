@@ -1,5 +1,6 @@
 import 'package:apartment_project/screens/apartment_screen.dart';
 import 'package:apartment_project/screens/bottom_nav_screen.dart';
+import 'package:apartment_project/screens/orders_screen.dart';
 import 'package:apartment_project/screens/upload_apartment_screen.dart';
 import 'package:apartment_project/screens/upload_screen.dart';
 import 'package:apartment_project/screens/upload_summary.dart';
@@ -53,10 +54,7 @@ class MyApp extends StatelessWidget {
           page: () => BottomNavScreen(),
           binding: BottomNavBinding(),
         ),
-        GetPage(
-          name: '/uploadScreen',
-          page: () => UploadScreen(),
-        ),
+        GetPage(name: '/uploadScreen', page: () => UploadScreen()),
         GetPage(
           name: '/uploadSummaryScreen',
           page: () => UploadSummary(),
@@ -67,6 +65,7 @@ class MyApp extends StatelessWidget {
           name: '/uploadApartmentScreen',
           page: () => UploadApartmentScreen(),
         ),
+        GetPage(name: '/orderHistory', page: () => OrdersScreen()),
       ],
     );
   }

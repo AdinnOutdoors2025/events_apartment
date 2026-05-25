@@ -97,12 +97,13 @@ class Apartment {
   String? contactPersonName;
   String? contactPersonPhone;
   String? email;
-  List<BankDetail>? bankDetails;
+  BankDetail? bankDetails;
   String? permissionStatus;
   String? rating;
   int? residencyCount;
   int? approxPeopleCount;
-  int? startingTgValues;
+  int? fromTGValues;
+  int? toTGValues;
   List<ExistingEventsHistory>? existingEventsHistory;
   String? perDayRent;
   String? updatedBy;
@@ -131,7 +132,8 @@ class Apartment {
     this.rating,
     this.residencyCount,
     this.approxPeopleCount,
-    this.startingTgValues,
+    this.fromTGValues,
+    this.toTGValues,
     this.existingEventsHistory,
     this.perDayRent,
     this.updatedBy,
@@ -161,15 +163,14 @@ class Apartment {
     contactPersonPhone: json["contactPersonPhone"],
     email: json["email"],
     bankDetails: json["bankDetails"] == null
-        ? []
-        : List<BankDetail>.from(
-            json["bankDetails"]!.map((x) => BankDetail.fromJson(x)),
-          ),
+        ? null
+        : BankDetail.fromJson(json["bankDetails"]),
     permissionStatus: json["permissionStatus"],
     rating: json["rating"],
     residencyCount: json["residencyCount"],
     approxPeopleCount: json["approxPeopleCount"],
-    startingTgValues: json["startingTGValues"],
+    fromTGValues: json["fromTGValues"],
+    toTGValues: json["toTGValues"],
     existingEventsHistory: json["existingEventsHistory"] == null
         ? []
         : List<ExistingEventsHistory>.from(
@@ -204,14 +205,13 @@ class Apartment {
     "contactPersonName": contactPersonName,
     "contactPersonPhone": contactPersonPhone,
     "email": email,
-    "bankDetails": bankDetails == null
-        ? []
-        : List<dynamic>.from(bankDetails!.map((x) => x.toJson())),
+    "bankDetails": bankDetails?.toJson(),
     "permissionStatus": permissionStatus,
     "rating": rating,
     "residencyCount": residencyCount,
     "approxPeopleCount": approxPeopleCount,
-    "startingTGValues": startingTgValues,
+    "fromTGValues": fromTGValues,
+    "toTGValues": toTGValues,
     "existingEventsHistory": existingEventsHistory == null
         ? []
         : List<dynamic>.from(existingEventsHistory!.map((x) => x.toJson())),
@@ -254,7 +254,6 @@ class BankDetail {
   String? ifscCode;
   String? phoneNumber;
   String? upiId;
-  String? id;
 
   BankDetail({
     this.accountName,
@@ -263,27 +262,24 @@ class BankDetail {
     this.ifscCode,
     this.phoneNumber,
     this.upiId,
-    this.id,
   });
 
   factory BankDetail.fromJson(Map<String, dynamic> json) => BankDetail(
-    accountName: json["accountName"],
+    accountName: json["accountHolderName"],
     bankName: json["bankName"],
     accountNumber: json["accountNumber"],
     ifscCode: json["ifscCode"],
     phoneNumber: json["phoneNumber"],
     upiId: json["upiId"],
-    id: json["_id"],
   );
 
   Map<String, dynamic> toJson() => {
-    "accountName": accountName,
+    "accountHolderName": accountName,
     "bankName": bankName,
     "accountNumber": accountNumber,
     "ifscCode": ifscCode,
     "phoneNumber": phoneNumber,
     "upiId": upiId,
-    "_id": id,
   };
 }
 

@@ -11,6 +11,7 @@ import '../routes/upload_navigator.dart';
 import '../services/storage_service.dart';
 import '../theme/app_colors.dart';
 import 'apartment_screen.dart';
+import 'orders_screen.dart';
 
 class BottomNavScreen extends StatelessWidget {
   BottomNavScreen({super.key});
@@ -20,7 +21,7 @@ class BottomNavScreen extends StatelessWidget {
   final List<Widget> pages = [
     const DashboardScreen(),
     ApartmentScreen(),
-    const OrdersScreen(),
+     OrdersScreen(),
     UploadScreen(),
     const MoreScreen(),
   ];
@@ -110,18 +111,6 @@ class RateCardScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(child: Text("RateCard")),
-    );
-  }
-}
-
-class OrdersScreen extends StatelessWidget {
-  const OrdersScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(child: Text("Orders")),
     );
   }
 }

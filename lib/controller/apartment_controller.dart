@@ -19,7 +19,6 @@ class ApartmentController extends GetxController {
   int page = 1;
   int totalPages = 1;
 
-  // String? currentSessionId;
   final RxnString currentSessionId = RxnString();
   final ScrollController scrollController = ScrollController();
   final isFilterApplied = false.obs;
@@ -36,6 +35,12 @@ class ApartmentController extends GetxController {
   final minTG = 0.0.obs;
   final maxTG = 0.0.obs;
   final tgValueRange = const RangeValues(0, 0).obs;
+  final appliedLocation = RxnString();
+  final appliedCity = RxnString();
+
+  final appliedCampaignRange = const RangeValues(0, 0).obs;
+  final appliedTGRange = const RangeValues(0, 0).obs;
+  final openedDropdown = RxnString();
 
   @override
   void onInit() {
@@ -75,6 +80,13 @@ class ApartmentController extends GetxController {
         !isTGDefault;
   }
 
+  Future<void> refreshApartments() async {
+    await getApartments(
+      sessionId: currentSessionId.value,
+      updateFilterData: true,
+    );
+  }
+
   Future<void> getApartments({
     bool isLoadMore = false,
     bool updateFilterData = true,
@@ -92,7 +104,8 @@ class ApartmentController extends GetxController {
         currentSessionId.value = sessionId;
       }
       final selectedSessionId = currentSessionId;
-      final bool useCurrentFilters = isFilterApplied.value && sessionId == null;
+      final bool useCurrentFilters =
+          isFilterApplied.value;
       if (kDebugMode) {
         print("usecurrentfilters: $useCurrentFilters");
       }
@@ -159,6 +172,18 @@ class ApartmentController extends GetxController {
     }
   }
 
+  void toggleDropdown(String key) {
+    if (openedDropdown.value == key) {
+      openedDropdown.value = null;
+    } else {
+      openedDropdown.value = key;
+    }
+  }
+
+  void closeDropdown() {
+    openedDropdown.value = null;
+  }
+
   void clearSessionFilter() {
     currentSessionId.value = null;
   }
@@ -173,6 +198,12 @@ class ApartmentController extends GetxController {
     );
 
     tgValueRange.value = RangeValues(minTG.value, maxTG.value);
+    appliedLocation.value = null;
+    appliedCity.value = null;
+
+    appliedCampaignRange.value = campaignPriceRange.value;
+    appliedTGRange.value = tgValueRange.value;
+    closeDropdown();
   }
 
   void setFilterDataFromApi(Datas? data) {
@@ -196,6 +227,10 @@ class ApartmentController extends GetxController {
         minCampaignRent.value,
         maxCampaignRent.value,
       );
+      appliedCampaignRange.value = RangeValues(
+        minCampaignRent.value,
+        maxCampaignRent.value,
+      );
     }
 
     if (apiMaxTG > apiMinTG) {
@@ -203,6 +238,7 @@ class ApartmentController extends GetxController {
       maxTG.value = apiMaxTG.toDouble();
 
       tgValueRange.value = RangeValues(minTG.value, maxTG.value);
+      appliedTGRange.value = RangeValues(minTG.value, maxTG.value);
     }
   }
 
@@ -217,6 +253,11 @@ class ApartmentController extends GetxController {
     final rentRange = campaignPriceRange.value;
     final tgRange = tgValueRange.value;
 
+    appliedLocation.value = selectedLocation.value;
+    appliedCity.value = selectedCity.value;
+
+    appliedCampaignRange.value = campaignPriceRange.value;
+    appliedTGRange.value = tgValueRange.value;
     getApartments(
       updateFilterData: false,
       location: selectedLocation.value,
@@ -226,6 +267,7 @@ class ApartmentController extends GetxController {
       minTG: tgRange.start.round(),
       maxTG: tgRange.end.round(),
     );
+    closeDropdown();
   }
 
   void clearFiltersAndFetch() {
@@ -236,16 +278,19 @@ class ApartmentController extends GetxController {
 
   int get appliedFilterCount {
     int count = 0;
+    if (kDebugMode) {
+      print("count: $count");
+    }
 
-    if (selectedLocation.value != null) {
+    if (appliedLocation.value != null) {
       count++;
     }
 
-    if (selectedCity.value != null) {
+    if (appliedCity.value != null) {
       count++;
     }
 
-    final rent = campaignPriceRange.value;
+    final rent = appliedCampaignRange.value;
 
     final isRentDefault =
         rent.start.round() == minCampaignRent.value.round() &&
@@ -255,7 +300,7 @@ class ApartmentController extends GetxController {
       count++;
     }
 
-    final tg = tgValueRange.value;
+    final tg = appliedTGRange.value;
 
     final isTGDefault =
         tg.start.round() == minTG.value.round() &&
@@ -264,7 +309,6 @@ class ApartmentController extends GetxController {
     if (!isTGDefault) {
       count++;
     }
-
     return count;
   }
 

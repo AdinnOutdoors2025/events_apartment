@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import '../constants/api_constants.dart';
 import '../model/get_list_model.dart';
+import '../model/order_history_model.dart';
 import '../model/recent_upload_model.dart';
 import '../model/upload_file_model.dart';
 import 'dio_client.dart';
@@ -145,6 +146,23 @@ class ApiService {
       throw handleError(e);
     } catch (e) {
       throw e.toString();
+    }
+  }
+
+  Future<OrderHistoryModel> getOrderHistoryAPI({
+    required int pageNumber,
+    required int count,
+  }) async {
+    try {
+      final response = await dio.post(
+        ApiConstants.orderHistory,
+        data: {"pageNumber": pageNumber, "count": count},
+        options: Options(headers: {"isRequireAuth": true}),
+      );
+
+      return OrderHistoryModel.fromJson(response.data);
+    } catch (e) {
+      rethrow;
     }
   }
 }

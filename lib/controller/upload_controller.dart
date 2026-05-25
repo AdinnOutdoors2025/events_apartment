@@ -131,29 +131,9 @@ class UploadController extends GetxController {
     }
   }
 
-  /*
-  Future<void> getUploadSummary({required String sessionId}) async {
-    try {
-      isSummaryLoading.value = true;
-
-      final response = await apiService.getApartmentSummary(
-        sessionId: sessionId,
-        pageNumber: 1,
-        count: 10,
-      );
-
-      if (response.success == true) {
-        summaryData.value = response.data;
-      } else {
-        AppToast.showError(response.message ?? "Failed");
-        print("${response.message}");
-      }
-    } catch (e) {
-      AppToast.showError(e.toString());
-      print("${e.toString()}");
-    } finally {
-      isSummaryLoading.value = false;
-    }
+  @override
+  void onClose() {
+    scrollController.dispose();
+    super.onClose();
   }
-*/
 }

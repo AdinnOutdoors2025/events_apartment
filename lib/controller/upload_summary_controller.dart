@@ -1,3 +1,4 @@
+import 'package:apartment_project/utils/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../model/get_list_model.dart';
@@ -42,7 +43,9 @@ class UploadSummaryController extends GetxController {
       insertedCount = listData?.file?.insertedCount ?? 0;
       updatedCount = listData?.file?.updatedCount ?? 0;
       skippedCount = listData?.file?.skippedCount ?? 0;
-      uploadedAt = listData?.file?.uploadedAt?.toString() ?? "";
+      uploadedAt = Helpers().formatDateTime(
+        listData?.file?.uploadedAt.toString(),
+      );
       sessionId = listData?.file?.sessionId ?? "";
     }
 

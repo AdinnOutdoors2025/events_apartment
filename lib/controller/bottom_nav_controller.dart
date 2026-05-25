@@ -1,5 +1,5 @@
+import 'package:apartment_project/controller/upload_controller.dart';
 import 'package:get/get.dart';
-
 import 'apartment_controller.dart';
 
 class BottomNavController extends GetxController {
@@ -13,6 +13,10 @@ class BottomNavController extends GetxController {
       final apartmentController = Get.find<ApartmentController>();
       apartmentController.clearSessionFilter();
       await apartmentController.getApartments();
+    }
+    if (index == 3) {
+      final uploadController = Get.find<UploadController>();
+      await uploadController.getRecentUploads();
     }
     tabHistory.remove(index);
     tabHistory.add(index);

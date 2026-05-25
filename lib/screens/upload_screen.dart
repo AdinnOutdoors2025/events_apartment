@@ -119,7 +119,8 @@ class UploadScreen extends StatelessWidget {
 
               Expanded(
                 child: Obx(() {
-                  if (controller.isRecentLoading.value) {
+                  if (controller.isRecentLoading.value/* &&
+                      controller.recentUploads.isEmpty*/) {
                     return const Center(
                       child: Padding(
                         padding: EdgeInsets.all(30),
@@ -146,6 +147,7 @@ class UploadScreen extends StatelessWidget {
                   return ListView.builder(
                     shrinkWrap: true,
                     controller: controller.scrollController,
+                    physics: AlwaysScrollableScrollPhysics(),
                     itemCount:
                         controller.recentUploads.length +
                         (controller.isPaginationLoading.value ? 1 : 0),
