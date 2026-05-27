@@ -78,7 +78,7 @@ class OrdersScreen extends StatelessWidget {
           Expanded(
             child: Obx(() {
               /// LOADING
-              if (controller.isLoading.value && controller.orderList.isEmpty) {
+              if (controller.isLoading.value /*&& controller.orderList.isEmpty*/) {
                 return const Center(child: CircularProgressIndicator());
               }
 
@@ -131,9 +131,7 @@ class ApartmentOrderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final statusColor = _getStatusColor(booking.orderStatus);
-
     final statusBgColor = _getStatusBgColor(booking.orderStatus);
-
     final statusText = _getStatusText(booking.orderStatus);
 
     return Container(

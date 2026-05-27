@@ -18,7 +18,6 @@ class ApartmentController extends GetxController {
   RxBool isPaginationLoading = false.obs;
   int page = 1;
   int totalPages = 1;
-
   final RxnString currentSessionId = RxnString();
   final ScrollController scrollController = ScrollController();
   final isFilterApplied = false.obs;

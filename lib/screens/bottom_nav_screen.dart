@@ -11,6 +11,7 @@ import '../routes/upload_navigator.dart';
 import '../services/storage_service.dart';
 import '../theme/app_colors.dart';
 import 'apartment_screen.dart';
+import 'kanban_board_screen.dart';
 import 'orders_screen.dart';
 
 class BottomNavScreen extends StatelessWidget {
@@ -21,7 +22,8 @@ class BottomNavScreen extends StatelessWidget {
   final List<Widget> pages = [
     const DashboardScreen(),
     ApartmentScreen(),
-     OrdersScreen(),
+    // OrdersScreen(),
+    KanbanBoardScreen(),
     UploadScreen(),
     const MoreScreen(),
   ];
@@ -54,7 +56,6 @@ class BottomNavScreen extends StatelessWidget {
               type: BottomNavigationBarType.fixed,
               selectedItemColor: AppColors.red,
               backgroundColor: Colors.white,
-
               unselectedItemColor: Colors.grey.shade700,
               items: const [
                 BottomNavigationBarItem(
