@@ -1,7 +1,7 @@
 class UploadFileModel {
   bool? success;
   String? message;
-  Data? data;
+  UploadData? data;
 
   UploadFileModel({this.success, this.message, this.data});
 
@@ -9,7 +9,7 @@ class UploadFileModel {
       UploadFileModel(
         success: json["success"],
         message: json["message"],
-        data: json["data"] == null ? null : Data.fromJson(json["data"]),
+        data: json["data"] == null ? null : UploadData.fromJson(json["data"]),
       );
 
   Map<String, dynamic> toJson() => {
@@ -19,7 +19,7 @@ class UploadFileModel {
   };
 }
 
-class Data {
+class UploadData {
   String? sessionId;
   String? fileName;
   int? totalRows;
@@ -32,7 +32,7 @@ class Data {
   List<dynamic>? skippedData;
   Summary? summary;
 
-  Data({
+  UploadData({
     this.sessionId,
     this.fileName,
     this.totalRows,
@@ -46,7 +46,7 @@ class Data {
     this.summary,
   });
 
-  factory Data.fromJson(Map<String, dynamic> json) => Data(
+  factory UploadData.fromJson(Map<String, dynamic> json) => UploadData(
     sessionId: json["sessionId"],
     fileName: json["fileName"],
     totalRows: json["totalRows"],

@@ -91,6 +91,7 @@ class Apartment {
   String? apartmentAddress;
   String? city;
   String? location;
+  String? state;
   String? jioLocation;
   String? photo;
   String? apartmentSummary;
@@ -121,6 +122,7 @@ class Apartment {
     this.apartmentAddress,
     this.city,
     this.location,
+    this.state,
     this.jioLocation,
     this.photo,
     this.apartmentSummary,
@@ -156,6 +158,7 @@ class Apartment {
     apartmentAddress: json["apartmentAddress"],
     city: json["city"],
     location: json["location"],
+    state: json["state"],
     jioLocation: json["jioLocation"],
     photo: json["photo"],
     apartmentSummary: json["apartmentSummary"],
@@ -199,6 +202,7 @@ class Apartment {
     "apartmentAddress": apartmentAddress,
     "city": city,
     "location": location,
+    "state": state,
     "jioLocation": jioLocation,
     "photo": photo,
     "apartmentSummary": apartmentSummary,

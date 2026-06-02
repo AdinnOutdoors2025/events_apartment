@@ -1,0 +1,496 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../model/get_list_model.dart';
+import '../services/api_service.dart';
+import '../utils/snackbar.dart';
+
+class ApartmentState {
+  final Datas? apartmentData;
+  final List<Apartment> apartments;
+  final bool isLoading;
+  final bool isPaginationLoading;
+  final int page;
+  final int totalPages;
+  final String? currentSessionId;
+  final bool isFilterApplied;
+  final String? selectedLocation;
+  final String? selectedCity;
+  final List<String> locations;
+  final List<String> cities;
+  final double minCampaignRent;
+  final double maxCampaignRent;
+  final RangeValues campaignPriceRange;
+  final double minTG;
+  final double maxTG;
+  final RangeValues tgValueRange;
+  final String? appliedLocation;
+  final String? appliedCity;
+  final RangeValues appliedCampaignRange;
+  final RangeValues appliedTGRange;
+  final String? openedDropdown;
+
+  ApartmentState({
+    this.apartmentData,
+    this.apartments = const [],
+    this.isLoading = false,
+    this.isPaginationLoading = false,
+    this.page = 1,
+    this.totalPages = 1,
+    this.currentSessionId,
+    this.isFilterApplied = false,
+    this.selectedLocation,
+    this.selectedCity,
+    this.locations = const [],
+    this.cities = const [],
+    this.minCampaignRent = 0.0,
+    this.maxCampaignRent = 0.0,
+    this.campaignPriceRange = const RangeValues(0, 0),
+    this.minTG = 0.0,
+    this.maxTG = 0.0,
+    this.tgValueRange = const RangeValues(0, 0),
+    this.appliedLocation,
+    this.appliedCity,
+    this.appliedCampaignRange = const RangeValues(0, 0),
+    this.appliedTGRange = const RangeValues(0, 0),
+    this.openedDropdown,
+  });
+
+  ApartmentState copyWith({
+    Datas? Function()? apartmentData,
+    List<Apartment>? apartments,
+    bool? isLoading,
+    bool? isPaginationLoading,
+    int? page,
+    int? totalPages,
+    String? Function()? currentSessionId,
+    bool? isFilterApplied,
+    String? Function()? selectedLocation,
+    String? Function()? selectedCity,
+    List<String>? locations,
+    List<String>? cities,
+    double? minCampaignRent,
+    double? maxCampaignRent,
+    RangeValues? campaignPriceRange,
+    double? minTG,
+    double? maxTG,
+    RangeValues? tgValueRange,
+    String? Function()? appliedLocation,
+    String? Function()? appliedCity,
+    RangeValues? appliedCampaignRange,
+    RangeValues? appliedTGRange,
+    String? Function()? openedDropdown,
+  }) {
+    return ApartmentState(
+      apartmentData: apartmentData != null ? apartmentData() : this.apartmentData,
+      apartments: apartments ?? this.apartments,
+      isLoading: isLoading ?? this.isLoading,
+      isPaginationLoading: isPaginationLoading ?? this.isPaginationLoading,
+      page: page ?? this.page,
+      totalPages: totalPages ?? this.totalPages,
+      currentSessionId: currentSessionId != null ? currentSessionId() : this.currentSessionId,
+      isFilterApplied: isFilterApplied ?? this.isFilterApplied,
+      selectedLocation: selectedLocation != null ? selectedLocation() : this.selectedLocation,
+      selectedCity: selectedCity != null ? selectedCity() : this.selectedCity,
+      locations: locations ?? this.locations,
+      cities: cities ?? this.cities,
+      minCampaignRent: minCampaignRent ?? this.minCampaignRent,
+      maxCampaignRent: maxCampaignRent ?? this.maxCampaignRent,
+      campaignPriceRange: campaignPriceRange ?? this.campaignPriceRange,
+      minTG: minTG ?? this.minTG,
+      maxTG: maxTG ?? this.maxTG,
+      tgValueRange: tgValueRange ?? this.tgValueRange,
+      appliedLocation: appliedLocation != null ? appliedLocation() : this.appliedLocation,
+      appliedCity: appliedCity != null ? appliedCity() : this.appliedCity,
+      appliedCampaignRange: appliedCampaignRange ?? this.appliedCampaignRange,
+      appliedTGRange: appliedTGRange ?? this.appliedTGRange,
+      openedDropdown: openedDropdown != null ? openedDropdown() : this.openedDropdown,
+    );
+  }
+}
+
+class ApartmentViewModel extends AutoDisposeFamilyNotifier<ApartmentState, String?> {
+  final ApiService apiService = ApiService();
+  final ScrollController scrollController = ScrollController();
+
+  @override
+  ApartmentState build(String? arg) {
+    ref.onDispose(() {
+      scrollController.dispose();
+    });
+
+    Future.microtask(() {
+      getApartments(sessionId: arg);
+    });
+
+    scrollController.addListener(() {
+      if (scrollController.position.pixels >=
+              scrollController.position.maxScrollExtent - 200 &&
+          !state.isPaginationLoading &&
+          state.page < state.totalPages) {
+        getApartments(isLoadMore: true);
+      }
+    });
+
+    return ApartmentState(currentSessionId: arg);
+  }
+
+  bool get isSessionBasedData {
+    return state.currentSessionId?.isNotEmpty ?? false;
+  }
+
+  bool get hasAnyFilterSelected {
+    final rent = state.campaignPriceRange;
+    final tg = state.tgValueRange;
+
+    final isRentDefault =
+        rent.start.round() == state.minCampaignRent.round() &&
+        rent.end.round() == state.maxCampaignRent.round();
+
+    final isTGDefault =
+        tg.start.round() == state.minTG.round() &&
+        tg.end.round() == state.maxTG.round();
+
+    return state.selectedLocation != null ||
+        state.selectedCity != null ||
+        !isRentDefault ||
+        !isTGDefault;
+  }
+
+  Future<void> refreshApartments() async {
+    await getApartments(
+      sessionId: state.currentSessionId,
+      updateFilterData: true,
+    );
+  }
+
+  Future<void> getApartments({
+    bool isLoadMore = false,
+    bool updateFilterData = true,
+    String? sessionId,
+    String? search,
+    String? location,
+    String? city,
+    int? minRent,
+    int? maxRent,
+    int? minTG,
+    int? maxTG,
+  }) async {
+    try {
+      String? activeSessionId = state.currentSessionId;
+      if (sessionId != null && sessionId.isNotEmpty) {
+        activeSessionId = sessionId;
+        state = state.copyWith(currentSessionId: () => sessionId);
+      }
+
+     /* final bool useCurrentFilters = state.isFilterApplied;
+      final requestLocation = location ?? (useCurrentFilters ? state.selectedLocation : null);
+      final requestCity = city ?? (useCurrentFilters ? state.selectedCity : null);
+      final requestMinRent = minRent ?? (useCurrentFilters ? state.campaignPriceRange.start.round() : null);
+      final requestMaxRent = maxRent ?? (useCurrentFilters ? state.campaignPriceRange.end.round() : null);
+      final requestMinTG = minTG ?? (useCurrentFilters ? state.tgValueRange.start.round() : null);
+      final requestMaxTG = maxTG ?? (useCurrentFilters ? state.tgValueRange.end.round() : null);*/
+      final bool useCurrentFilters = state.isFilterApplied;
+
+      final bool appliedRentChanged =
+          state.appliedCampaignRange.start.round() != state.minCampaignRent.round() ||
+              state.appliedCampaignRange.end.round() != state.maxCampaignRent.round();
+
+      final bool appliedTGChanged =
+          state.appliedTGRange.start.round() != state.minTG.round() ||
+              state.appliedTGRange.end.round() != state.maxTG.round();
+
+      final requestLocation =
+          location ?? (useCurrentFilters ? state.appliedLocation : null);
+
+      final requestCity =
+          city ?? (useCurrentFilters ? state.appliedCity : null);
+
+      final requestMinRent =
+          minRent ??
+              (useCurrentFilters && appliedRentChanged
+                  ? state.appliedCampaignRange.start.round()
+                  : null);
+
+      final requestMaxRent =
+          maxRent ??
+              (useCurrentFilters && appliedRentChanged
+                  ? state.appliedCampaignRange.end.round()
+                  : null);
+
+      final requestMinTG =
+          minTG ??
+              (useCurrentFilters && appliedTGChanged
+                  ? state.appliedTGRange.start.round()
+                  : null);
+
+      final requestMaxTG =
+          maxTG ??
+              (useCurrentFilters && appliedTGChanged
+                  ? state.appliedTGRange.end.round()
+                  : null);
+      int nextPage = state.page;
+      List<Apartment> currentList = List.from(state.apartments);
+
+      if (kDebugMode) {
+        print("FILTER API PARAMS => "
+            "sessionId: $activeSessionId, "
+            "location: $requestLocation, "
+            "city: $requestCity, "
+            "minRent: $requestMinRent, "
+            "maxRent: $requestMaxRent, "
+            "minTG: $requestMinTG, "
+            "maxTG: $requestMaxTG");
+      }
+
+      if (isLoadMore) {
+        state = state.copyWith(isPaginationLoading: true);
+        nextPage++;
+      } else {
+        state = state.copyWith(isLoading: true);
+        nextPage = 1;
+        currentList.clear();
+      }
+
+      final response = await apiService.getApartmentSummary(
+        pageNumber: nextPage,
+        count: 10,
+        sessionId: activeSessionId,
+        search: search,
+        location: requestLocation,
+        city: requestCity,
+        minRent: requestMinRent,
+        maxRent: requestMaxRent,
+        minTG: requestMinTG,
+        maxTG: requestMaxTG,
+      );
+
+      if (response.success == true) {
+        currentList.addAll(response.data?.apartments ?? []);
+        state = state.copyWith(
+          apartmentData: () => response.data,
+          totalPages: response.data?.totalPages ?? 1,
+          apartments: currentList,
+          page: nextPage,
+        );
+
+        if (!isLoadMore && updateFilterData && !state.isFilterApplied) {
+          setFilterDataFromApi(response.data);
+        }
+      }
+    } catch (e) {
+      AppToast.showError(e.toString());
+    } finally {
+      state = state.copyWith(
+        isLoading: false,
+        isPaginationLoading: false,
+      );
+    }
+  }
+
+  void toggleDropdown(String key) {
+    if (state.openedDropdown == key) {
+      state = state.copyWith(openedDropdown: () => null);
+    } else {
+      state = state.copyWith(openedDropdown: () => key);
+    }
+  }
+
+  void closeDropdown() {
+    state = state.copyWith(openedDropdown: () => null);
+  }
+
+  void clearSessionFilter() {
+    state = state.copyWith(currentSessionId: () => null);
+  }
+
+  void resetFilters() {
+    state = state.copyWith(
+      selectedLocation: () => null,
+      selectedCity: () => null,
+      campaignPriceRange: RangeValues(state.minCampaignRent, state.maxCampaignRent),
+      tgValueRange: RangeValues(state.minTG, state.maxTG),
+      appliedLocation: () => null,
+      appliedCity: () => null,
+      appliedCampaignRange: RangeValues(state.minCampaignRent, state.maxCampaignRent),
+      appliedTGRange: RangeValues(state.minTG, state.maxTG),
+      openedDropdown: () => null,
+    );
+  }
+
+  void setFilterDataFromApi(Datas? data) {
+    final priceRange = data?.priceRange;
+    if (priceRange == null) {
+      state = state.copyWith(
+        locations: data?.locationFilter ?? [],
+        cities: data?.cityFilter ?? [],
+      );
+      return;
+    }
+
+    final apiMinRent = priceRange.minRent ?? 0;
+    final apiMaxRent = priceRange.maxRent ?? 0;
+    final apiMinTG = priceRange.minTG ?? 0;
+    final apiMaxTG = priceRange.maxTG ?? 0;
+
+    double minRentVal = state.minCampaignRent;
+    double maxRentVal = state.maxCampaignRent;
+    RangeValues rentRange = state.campaignPriceRange;
+    RangeValues appliedRentRange = state.appliedCampaignRange;
+
+    if (apiMaxRent > apiMinRent) {
+      minRentVal = apiMinRent.toDouble();
+      maxRentVal = apiMaxRent.toDouble();
+      rentRange = RangeValues(minRentVal, maxRentVal);
+      appliedRentRange = RangeValues(minRentVal, maxRentVal);
+    }
+
+    double minTGVal = state.minTG;
+    double maxTGVal = state.maxTG;
+    RangeValues tgRange = state.tgValueRange;
+    RangeValues appliedTGRangeVal = state.appliedTGRange;
+
+    if (apiMaxTG > apiMinTG) {
+      minTGVal = apiMinTG.toDouble();
+      maxTGVal = apiMaxTG.toDouble();
+      tgRange = RangeValues(minTGVal, maxTGVal);
+      appliedTGRangeVal = RangeValues(minTGVal, maxTGVal);
+    }
+
+    state = state.copyWith(
+      locations: data?.locationFilter ?? [],
+      cities: data?.cityFilter ?? [],
+      minCampaignRent: minRentVal,
+      maxCampaignRent: maxRentVal,
+      campaignPriceRange: rentRange,
+      appliedCampaignRange: appliedRentRange,
+      minTG: minTGVal,
+      maxTG: maxTGVal,
+      tgValueRange: tgRange,
+      appliedTGRange: appliedTGRangeVal,
+    );
+  }
+
+  Future<void> applyFilterFromSheet() async {
+    final rentRange = state.campaignPriceRange;
+    final tgRange = state.tgValueRange;
+
+    final bool isRentChanged =
+        rentRange.start.round() != state.minCampaignRent.round() ||
+            rentRange.end.round() != state.maxCampaignRent.round();
+
+    final bool isTGChanged =
+        tgRange.start.round() != state.minTG.round() ||
+            tgRange.end.round() != state.maxTG.round();
+
+    final bool isApplied =
+        state.selectedLocation != null ||
+            state.selectedCity != null ||
+            isRentChanged ||
+            isTGChanged;
+    final selectedLocation = state.selectedLocation;
+    final selectedCity = state.selectedCity;
+    final currentSessionId = state.currentSessionId;
+
+    state = state.copyWith(
+      isFilterApplied: isApplied,
+      appliedLocation: () => selectedLocation,
+      appliedCity: () => selectedCity,
+      appliedCampaignRange: rentRange,
+      appliedTGRange: tgRange,
+      openedDropdown: () => null,
+    );
+
+    await getApartments(
+      sessionId: currentSessionId,
+      updateFilterData: false,
+      location: selectedLocation,
+      city: selectedCity,
+      minRent: isRentChanged ? rentRange.start.round() : null,
+      maxRent: isRentChanged ? rentRange.end.round() : null,
+      minTG: isTGChanged ? tgRange.start.round() : null,
+      maxTG: isTGChanged ? tgRange.end.round() : null,
+    );
+  }
+
+  Future<void> clearFiltersAndFetch() async {
+    final sessionId = state.currentSessionId;
+
+    resetFilters();
+
+    state = state.copyWith(
+      currentSessionId: () => sessionId,
+      isFilterApplied: false,
+    );
+
+    await getApartments(
+      sessionId: sessionId,
+      updateFilterData: true,
+    );
+  }
+
+  int get appliedFilterCount {
+    int count = 0;
+
+    if (state.appliedLocation != null) {
+      count++;
+    }
+
+    if (state.appliedCity != null) {
+      count++;
+    }
+
+    final rent = state.appliedCampaignRange;
+    final isRentDefault =
+        rent.start.round() == state.minCampaignRent.round() &&
+        rent.end.round() == state.maxCampaignRent.round();
+
+    if (!isRentDefault) {
+      count++;
+    }
+
+    final tg = state.appliedTGRange;
+    final isTGDefault =
+        tg.start.round() == state.minTG.round() &&
+        tg.end.round() == state.maxTG.round();
+
+    if (!isTGDefault) {
+      count++;
+    }
+    return count;
+  }
+
+  Future<void> removeSessionFilter() async {
+    state = state.copyWith(
+      currentSessionId: () => null,
+      isFilterApplied: false,
+    );
+    resetFilters();
+    await getApartments(updateFilterData: true);
+  }
+
+  void setSelectedLocation(String? value) {
+    state = state.copyWith(selectedLocation: () => value);
+  }
+
+  void setSelectedCity(String? value) {
+    state = state.copyWith(selectedCity: () => value);
+  }
+
+  void setCampaignPriceRange(RangeValues value) {
+    state = state.copyWith(campaignPriceRange: value);
+  }
+
+  void setTGValueRange(RangeValues value) {
+    state = state.copyWith(tgValueRange: value);
+  }
+}
+
+final apartmentFamilyProvider =
+    NotifierProvider.autoDispose.family<ApartmentViewModel, ApartmentState, String?>(
+  ApartmentViewModel.new,
+);
+
+final apartmentViewModelProvider = Provider.autoDispose<ApartmentViewModel>((ref) {
+  return ref.watch(apartmentFamilyProvider(null).notifier);
+});

@@ -1,21 +1,22 @@
-import 'package:flutter/cupertino.dart';
-import 'package:get/get.dart';
-
-import '../controller/apartment_controller.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../viewmodel/apartment_viewmodel.dart';
 import 'apartment_screen_content.dart';
 
-class UploadApartmentScreen extends StatelessWidget {
-  UploadApartmentScreen({super.key});
+class UploadApartmentScreen extends ConsumerWidget {
+  final String sessionId;
 
-  final String sessionId = Get.arguments["sessionId"];
-
-  late final ApartmentController controller = Get.put(
-    ApartmentController(initialSessionId: sessionId),
-    tag: sessionId,
-  );
+  const UploadApartmentScreen({super.key, required this.sessionId});
 
   @override
-  Widget build(BuildContext context) {
-    return ApartmentScreenContent(controller: controller);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(apartmentFamilyProvider(sessionId));
+    final viewModel = ref.read(apartmentFamilyProvider(sessionId).notifier);
+
+    return ApartmentScreenContent(
+      state: state,
+      viewModel: viewModel,
+      sessionId: sessionId,
+    );
   }
 }

@@ -1,20 +1,46 @@
+import 'package:apartment_project/screens/upload_apartment_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_instance/src/extension_instance.dart';
-import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
-import '../controller/apartment_controller.dart';
-import '../controller/upload_summary_controller.dart';
+import '../model/get_list_model.dart';
+import '../model/upload_file_model.dart';
+import '../viewmodel/apartment_viewmodel.dart';
+import '../viewmodel/upload_summary_viewmodel.dart';
 import '../theme/app_colors.dart';
 import '../widgets/custom_button.dart';
 
-class UploadSummary extends StatelessWidget {
-  UploadSummary({super.key});
+class UploadSummary extends ConsumerWidget {
+  final bool isNewUpload;
+  final UploadData? uploadData;
+  final Datas? listData;
+  final String? sessionId;
 
-  final controller = Get.find<UploadSummaryController>();
+  const UploadSummary({
+    super.key,
+    required this.isNewUpload,
+    this.uploadData,
+    this.listData,
+    this.sessionId,
+  });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final apartmentState = ref.watch(apartmentFamilyProvider(sessionId));
+    if (!isNewUpload && apartmentState.isLoading) {
+      return const Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final state = ref.watch(
+      uploadSummaryFamilyProvider({
+        "isNewUpload": isNewUpload,
+        "uploadData": uploadData,
+        "listData": apartmentState.apartmentData,
+      }),
+    );
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -23,11 +49,11 @@ class UploadSummary extends StatelessWidget {
         centerTitle: true,
         leading: IconButton(
           onPressed: () {
-            Get.back();
+            Navigator.maybePop(context);
           },
           icon: const Icon(Icons.arrow_back, color: Colors.black),
         ),
-        title: Text(
+        title: const Text(
           "Upload Summary",
           style: TextStyle(color: AppColors.red, fontWeight: FontWeight.w500),
         ),
@@ -37,7 +63,7 @@ class UploadSummary extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (controller.isNewUpload) ...[
+            if (state.isNewUpload) ...[
               Center(
                 child: SizedBox(
                   height: 150,
@@ -67,7 +93,6 @@ class UploadSummary extends StatelessWidget {
                   ),
                 ),
               ),
-
               const Center(
                 child: Text(
                   "Upload Completed Successfully!",
@@ -78,19 +103,16 @@ class UploadSummary extends StatelessWidget {
                   ),
                 ),
               ),
-
               const SizedBox(height: 5),
-
               const Center(
                 child: Text(
                   "Your apartment data has been processed.",
                   style: TextStyle(color: Colors.grey, fontSize: 14),
                 ),
               ),
-
               const SizedBox(height: 15),
             ],
-            if (!controller.isNewUpload) ...[
+            if (!state.isNewUpload) ...[
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
@@ -114,20 +136,20 @@ class UploadSummary extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            controller.fileName,
-                            style: TextStyle(
+                            state.fileName,
+                            style: const TextStyle(
                               fontWeight: FontWeight.w700,
                               fontSize: 14,
                             ),
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            controller.uploadedAt,
+                            state.uploadedAt,
                             style: TextStyle(color: Colors.grey.shade600),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '${controller.totalRows} rows',
+                            '${state.totalRows} rows',
                             style: TextStyle(
                               color: Colors.grey.shade700,
                               fontWeight: FontWeight.w500,
@@ -141,20 +163,19 @@ class UploadSummary extends StatelessWidget {
               ),
               const SizedBox(height: 15),
             ],
-
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: controller.summaryList.length,
+              itemCount: state.summaryList.length,
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 crossAxisSpacing: 20,
                 mainAxisSpacing: 20,
                 childAspectRatio: 1.20,
               ),
-              padding: EdgeInsets.all(5),
+              padding: const EdgeInsets.all(5),
               itemBuilder: (context, index) {
-                final item = controller.summaryList[index];
+                final item = state.summaryList[index];
                 return SummaryBox(
                   title: item["title"],
                   value: item["value"],
@@ -162,37 +183,30 @@ class UploadSummary extends StatelessWidget {
                 );
               },
             ),
-            SizedBox(height: 15),
+            const SizedBox(height: 15),
             CustomButton(
               text: 'View Added Data',
               color: Colors.white,
               textColor: AppColors.red,
               radius: 12,
               borderColor: AppColors.red,
-              /*onPressed: () async {
-                //  Get.toNamed('/apartmentScreen');
-                final apartmentController = Get.find<ApartmentController>();
-                apartmentController.resetFilters();
-                apartmentController.isFilterApplied.value = false;
-                // keep session data
-                await apartmentController.getApartments(
-                  sessionId: controller.sessionId,
-                  updateFilterData: true,
-                );
-
-                Get.toNamed('/apartmentScreen');
-              },*/
               onPressed: () async {
-                Get.toNamed(
+                /*  Navigator.pushNamed(
+                  context,
                   '/uploadApartmentScreen',
                   arguments: {
-                    "sessionId": controller.sessionId,
+                    "sessionId": state.sessionId,
                   },
+                );*/
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        UploadApartmentScreen(sessionId: state.sessionId),
+                  ),
                 );
               },
-
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             CustomButton(
               text: 'View Failed / Duplicate Data',
               onPressed: () {},
@@ -243,9 +257,7 @@ class SummaryBox extends StatelessWidget {
             title,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
-
           const SizedBox(height: 10),
-
           Text(
             value,
             style: TextStyle(

@@ -1,16 +1,24 @@
+import 'package:apartment_project/screens/apartment_details_screen.dart';
 import 'package:apartment_project/widgets/custom_button.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-
-import '../controller/apartment_controller.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../viewmodel/apartment_viewmodel.dart';
 import '../model/get_list_model.dart';
 import '../theme/app_colors.dart';
 import '../widgets/custom_dropdown.dart';
+import 'add_apartment_screen.dart';
 
 class ApartmentScreenContent extends StatelessWidget {
-  final ApartmentController controller;
+  final ApartmentState state;
+  final ApartmentViewModel viewModel;
+  final String? sessionId;
 
-  const ApartmentScreenContent({super.key, required this.controller});
+  const ApartmentScreenContent({
+    super.key,
+    required this.state,
+    required this.viewModel,
+    this.sessionId,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -22,18 +30,16 @@ class ApartmentScreenContent extends StatelessWidget {
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.white,
         centerTitle: true,
-
-        leading: IconButton(
+       /* leading: IconButton(
           onPressed: () {
-            Get.back();
+            Navigator.maybePop(context);
           },
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
             color: Colors.black,
             size: 21,
           ),
-        ),
-
+        ),*/
         title: const Text(
           'Apartment Rate Card',
           style: TextStyle(
@@ -42,86 +48,84 @@ class ApartmentScreenContent extends StatelessWidget {
             fontWeight: FontWeight.w500,
           ),
         ),
-
         actions: [
-          Obx(
-            () => Padding(
-              padding: const EdgeInsets.only(right: 6),
-              child: SizedBox(
-                width: 48,
-                height: 48,
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        showModalBottomSheet(
-                          context: Get.context!,
-                          isScrollControlled: true,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(20),
-                            ),
+          Padding(
+            padding: const EdgeInsets.only(right: 6),
+            child: SizedBox(
+              width: 48,
+              height: 48,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(20),
                           ),
-                          builder: (_) =>
-                              FilterBottomSheet(controller: controller),
-                        );
-                      },
-                      icon: const Icon(
-                        Icons.filter_alt_outlined,
-                        color: Colors.black,
-                        size: 25,
-                      ),
-                    ),
+                        ),
+                        /* builder: (_) => FilterBottomSheet(
+                          state: state,
+                          viewModel: viewModel,
+                        ),*/
+                        /* builder: (_) => const FilterBottomSheet(
 
-                    if (controller.appliedFilterCount > 0)
-                      Positioned(
-                        right: 2,
-                        top: -2,
-                        child: Container(
-                          padding: const EdgeInsets.all(5),
-                          decoration: const BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
-                          ),
-                          constraints: const BoxConstraints(
-                            minWidth: 20,
-                            minHeight: 20,
-                          ),
-                          child: Center(
-                            child: Text(
-                              controller.appliedFilterCount.toString(),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
+                        ),*/
+                        builder: (_) => FilterBottomSheet(
+                          // sessionId: state.currentSessionId,
+                          sessionId: sessionId,
+                        ),
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.filter_alt_outlined,
+                      color: Colors.black,
+                      size: 25,
+                    ),
+                  ),
+                  if (viewModel.appliedFilterCount > 0)
+                    Positioned(
+                      right: 2,
+                      top: -2,
+                      child: Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 20,
+                          minHeight: 20,
+                        ),
+                        child: Center(
+                          child: Text(
+                            viewModel.appliedFilterCount.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
                       ),
-                  ],
-                ),
+                    ),
+                ],
               ),
             ),
           ),
         ],
       ),
-
       body: Padding(
         padding: const EdgeInsets.fromLTRB(18, 8, 18, 0),
-
         child: Column(
           children: [
-            _SearchBox(controller: controller),
+            _SearchBox(viewModel: viewModel),
             const SizedBox(height: 14),
-            Obx(() {
-              if (!controller.isSessionBasedData ||
-                  controller.apartments.isEmpty) {
-                return const SizedBox();
-              }
-
-              return Container(
+            if (viewModel.isSessionBasedData && state.apartments.isNotEmpty)
+              Container(
                 margin: const EdgeInsets.only(bottom: 14),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 14,
@@ -144,10 +148,9 @@ class ApartmentScreenContent extends StatelessWidget {
                         ),
                       ),
                     ),
-
                     GestureDetector(
                       onTap: () async {
-                        await controller.removeSessionFilter();
+                        await viewModel.removeSessionFilter();
                       },
                       child: const Icon(
                         Icons.close,
@@ -157,48 +160,70 @@ class ApartmentScreenContent extends StatelessWidget {
                     ),
                   ],
                 ),
-              );
-            }),
-
+              ),
             Expanded(
-              child: Obx(() {
-                final items = controller.apartments;
+              child: Builder(
+                builder: (context) {
+                  final items = state.apartments;
 
-                if (controller.isLoading.value) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+                  if (state.isLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-                if (items.isEmpty) {
-                  return const Center(child: Text("No apartments found"));
-                }
+                  if (items.isEmpty) {
+                    return const Center(child: Text("No apartments found"));
+                  }
 
-                return RefreshIndicator(
-                  onRefresh: () async {
-                    await controller.refreshApartments();
-                  },
-                  child: ListView.separated(
-                    controller: controller.scrollController,
-                    physics: AlwaysScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    itemCount:
-                        items.length +
-                        (controller.isPaginationLoading.value ? 1 : 0),
-
-                    separatorBuilder: (_, __) => const SizedBox(height: 14),
-
-                    itemBuilder: (context, index) {
-                      if (index == items.length) {
-                        return const Padding(
-                          padding: EdgeInsets.all(20),
-                          child: Center(child: CircularProgressIndicator()),
-                        );
-                      }
-
-                      return ApartmentRateCard(apartment: items[index]);
+                  return RefreshIndicator(
+                    onRefresh: () async {
+                      await viewModel.refreshApartments();
                     },
-                  ),
-                );
-              }),
+                    child: ListView.separated(
+                      controller: viewModel.scrollController,
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount:
+                          items.length + (state.isPaginationLoading ? 1 : 0),
+                      separatorBuilder: (_, __) => const SizedBox(height: 14),
+                      itemBuilder: (context, index) {
+                        if (index == items.length) {
+                          return const Padding(
+                            padding: EdgeInsets.all(20),
+                            child: Center(child: CircularProgressIndicator()),
+                          );
+                        }
+
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.of(
+                              context,
+                              rootNavigator: true,
+                            ).pushNamed(
+                              '/apartmentDetails',
+                              arguments: items[index],
+                            );
+
+                            /*Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return ApartmentDetailsScreen(
+                                    apartment: items[index],
+                                  );
+                                },
+                              ),
+                            );*/
+                          },
+                          child: ApartmentRateCard(
+                            apartment: items[index],
+                            viewModel: viewModel,
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
             ),
           ],
         ),
@@ -207,13 +232,25 @@ class ApartmentScreenContent extends StatelessWidget {
   }
 }
 
-class FilterBottomSheet extends StatelessWidget {
-  final ApartmentController controller;
+class FilterBottomSheet extends ConsumerWidget {
 
-  const FilterBottomSheet({super.key, required this.controller});
+  final String? sessionId;
+
+  const FilterBottomSheet({
+    super.key,
+
+    this.sessionId,
+  });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final normalizedSessionId =
+        sessionId != null && sessionId!.trim().isNotEmpty ? sessionId : null;
+
+    final state = ref.watch(apartmentFamilyProvider(normalizedSessionId));
+    final viewModel = ref.read(
+      apartmentFamilyProvider(normalizedSessionId).notifier,
+    );
     return Container(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.82,
@@ -244,7 +281,6 @@ class FilterBottomSheet extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
               ),
             ),
-
             Row(
               children: [
                 const Expanded(
@@ -261,7 +297,7 @@ class FilterBottomSheet extends StatelessWidget {
                 ),
                 GestureDetector(
                   onTap: () {
-                    Get.back();
+                    Navigator.maybePop(context);
                   },
                   child: const Icon(
                     Icons.close_rounded,
@@ -271,96 +307,82 @@ class FilterBottomSheet extends StatelessWidget {
                 ),
               ],
             ),
-
             const SizedBox(height: 26),
-
-            Obx(
-              () => CustomDropdown(
-                title: 'Location',
-                hint: 'Select location',
-                dropdownKey: 'Location',
-                value: controller.selectedLocation.value,
-                items: controller.locations,
-                onChanged: (value) {
-                  controller.selectedLocation.value = value;
-                },
-                openedDropdown: controller.openedDropdown,
-              ),
+            CustomDropdown(
+              title: 'Location',
+              hint: 'Select location',
+              dropdownKey: 'Location',
+              value: state.selectedLocation,
+              items: state.locations,
+              onChanged: (value) {
+                viewModel.setSelectedLocation(value);
+              },
+              openedDropdown: state.openedDropdown,
+              toggleDropdown: viewModel.toggleDropdown,
             ),
-
             const SizedBox(height: 22),
-
-            Obx(
-              () => CustomDropdown(
-                title: 'City',
-                hint: 'Select city',
-                value: controller.selectedCity.value,
-                items: controller.cities,
-                onChanged: (value) {
-                  controller.selectedCity.value = value;
-                },
-                openedDropdown: controller.openedDropdown,
-                dropdownKey: 'City',
-              ),
+            CustomDropdown(
+              title: 'City',
+              hint: 'Select city',
+              value: state.selectedCity,
+              items: state.cities,
+              onChanged: (value) {
+                viewModel.setSelectedCity(value);
+              },
+              openedDropdown: state.openedDropdown,
+              dropdownKey: 'City',
+              toggleDropdown: viewModel.toggleDropdown,
             ),
-
             const SizedBox(height: 26),
+            Builder(
+              builder: (context) {
+                final range = state.campaignPriceRange;
+                final isChanged =
+                    range.start.round() != state.minCampaignRent.round() ||
+                    range.end.round() != state.maxCampaignRent.round();
 
-            Obx(() {
-              final range = controller.campaignPriceRange.value;
-
-              final isChanged =
-                  range.start.round() !=
-                      controller.minCampaignRent.value.round() ||
-                  range.end.round() != controller.maxCampaignRent.value.round();
-
-              return RangeFilterTile(
-                title: 'Campaign Price Range (₹ / Day)',
-                values: range,
-                min: controller.minCampaignRent.value,
-                max: controller.maxCampaignRent.value,
-                step: 1000,
-                isChanged: isChanged,
-
-                startText: '₹${range.start.round()}',
-                endText: '₹${range.end.round()}',
-
-                minText: '₹${controller.minCampaignRent.value.round()}',
-                maxText: '₹${controller.maxCampaignRent.value.round()}',
-
-                onChanged: (value) {
-                  controller.campaignPriceRange.value = value;
-                },
-              );
-            }),
+                return RangeFilterTile(
+                  title: 'Campaign Price Range (₹ / Day)',
+                  values: range,
+                  min: state.minCampaignRent,
+                  max: state.maxCampaignRent,
+                  step: 1000,
+                  isChanged: isChanged,
+                  startText: '₹${range.start.round()}',
+                  endText: '₹${range.end.round()}',
+                  minText: '₹${state.minCampaignRent.round()}',
+                  maxText: '₹${state.maxCampaignRent.round()}',
+                  onChanged: (value) {
+                    viewModel.setCampaignPriceRange(value);
+                  },
+                );
+              },
+            ),
             const SizedBox(height: 22),
+            Builder(
+              builder: (context) {
+                final range = state.tgValueRange;
+                final isChanged =
+                    range.start.round() != state.minTG.round() ||
+                    range.end.round() != state.maxTG.round();
 
-            Obx(() {
-              final range = controller.tgValueRange.value;
-
-              final isChanged =
-                  range.start.round() != controller.minTG.value.round() ||
-                  range.end.round() != controller.maxTG.value.round();
-
-              return RangeFilterTile(
-                title: 'TG Value Range',
-                values: range,
-                min: controller.minTG.value,
-                max: controller.maxTG.value,
-                step: 50,
-                isChanged: isChanged,
-
-                startText: '₹${range.start.round()}',
-                endText: '₹${range.end.round()}',
-
-                minText: '₹${controller.minTG.value.round()}',
-                maxText: '₹${controller.maxTG.value.round()}',
-
-                onChanged: (value) {
-                  controller.tgValueRange.value = value;
-                },
-              );
-            }),
+                return RangeFilterTile(
+                  title: 'TG Value Range',
+                  values: range,
+                  min: state.minTG,
+                  max: state.maxTG,
+                  step: 50,
+                  isChanged: isChanged,
+                  startText: '₹${range.start.round()}',
+                  endText: '₹${range.end.round()}',
+                  minText: '₹${state.minTG.round()}',
+                  maxText: '₹${state.maxTG.round()}',
+                  onChanged: (value) {
+                    viewModel.setTGValueRange(value);
+                  },
+                );
+              },
+            ),
             const SizedBox(height: 30),
             Row(
               children: [
@@ -368,8 +390,8 @@ class FilterBottomSheet extends StatelessWidget {
                   child: SizedBox(
                     height: 45,
                     child: OutlinedButton(
-                      onPressed: () {
-                        controller.clearFiltersAndFetch();
+                      onPressed: () async {
+                        await viewModel.clearFiltersAndFetch();
                       },
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.red,
@@ -391,16 +413,17 @@ class FilterBottomSheet extends StatelessWidget {
                     ),
                   ),
                 ),
-
                 const SizedBox(width: 14),
-
                 Expanded(
                   child: SizedBox(
                     height: 45,
                     child: ElevatedButton(
-                      onPressed: () {
-                        controller.applyFilterFromSheet();
-                        Get.back();
+                      onPressed: () async {
+                        await viewModel.applyFilterFromSheet();
+
+                        if (context.mounted) {
+                          Navigator.maybePop(context);
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.red,
@@ -467,9 +490,7 @@ class RangeFilterTile extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         FilterTitle(title: title),
-
         const SizedBox(height: 12),
-
         SliderTheme(
           data: SliderTheme.of(context).copyWith(
             activeTrackColor: AppColors.red,
@@ -482,7 +503,6 @@ class RangeFilterTile extends StatelessWidget {
             rangeTrackShape: const RoundedRectRangeSliderTrackShape(),
             trackHeight: 5,
           ),
-
           child: RangeSlider(
             values: values,
             min: min,
@@ -491,9 +511,7 @@ class RangeFilterTile extends StatelessWidget {
             labels: RangeLabels(startText, endText),
             onChanged: (value) {
               final start = (value.start / step).round() * step;
-
               final end = (value.end / step).round() * step;
-
               onChanged(RangeValues(start.toDouble(), end.toDouble()));
             },
           ),
@@ -543,9 +561,9 @@ class FilterTitle extends StatelessWidget {
 }
 
 class _SearchBox extends StatelessWidget {
-  final ApartmentController controller;
+  final ApartmentViewModel viewModel;
 
-  const _SearchBox({required this.controller});
+  const _SearchBox({required this.viewModel});
 
   @override
   Widget build(BuildContext context) {
@@ -565,7 +583,9 @@ class _SearchBox extends StatelessWidget {
       ),
       child: TextField(
         cursorColor: AppColors.red,
-        onChanged: (value) {},
+        onChanged: (value) {
+          viewModel.getApartments(search: value);
+        },
         style: const TextStyle(
           fontSize: 14,
           color: AppColors.textGrey,
@@ -593,8 +613,13 @@ class _SearchBox extends StatelessWidget {
 
 class ApartmentRateCard extends StatelessWidget {
   final Apartment apartment;
+  final ApartmentViewModel viewModel;
 
-  const ApartmentRateCard({super.key, required this.apartment});
+  const ApartmentRateCard({
+    super.key,
+    required this.apartment,
+    required this.viewModel,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -617,7 +642,6 @@ class ApartmentRateCard extends StatelessWidget {
         children: [
           _ApartmentImage(imagePath: apartment.photo ?? ""),
           const SizedBox(width: 12),
-
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -634,9 +658,20 @@ class ApartmentRateCard extends StatelessWidget {
                         ),
                       ),
                     ),
-
                     InkWell(
-                      onTap: () {},
+                      onTap: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                AddApartmentScreen(apartment: apartment),
+                          ),
+                        );
+
+                        if (result == true) {
+                          await viewModel.refreshApartments();
+                        }
+                      },
                       borderRadius: BorderRadius.circular(12),
                       child: Container(
                         width: 35,
@@ -665,16 +700,14 @@ class ApartmentRateCard extends StatelessWidget {
                     ),
                   ],
                 ),
-
-                //    const SizedBox(height: 3),
                 Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.location_on_outlined,
                       color: Colors.grey,
                       size: 14,
                     ),
-                    SizedBox(width: 1),
+                    const SizedBox(width: 1),
                     Text(
                       "${apartment.location ?? ""}, ${apartment.city ?? ""}",
                       maxLines: 1,
@@ -686,29 +719,24 @@ class ApartmentRateCard extends StatelessWidget {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 11),
-
                 RateInfoRow(
                   label: 'TG Value',
                   value:
                       "${apartment.fromTGValues ?? 0} - ${apartment.toTGValues ?? 0}",
                 ),
-
                 const SizedBox(height: 7),
-
                 RateInfoRow(
                   label: 'Total Residences',
                   value: "${apartment.residencyCount ?? 0}",
                 ),
-
                 const SizedBox(height: 7),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
+                    const Text(
                       "Per Day Rent",
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.textGrey,
                         fontSize: 12.2,
                         fontWeight: FontWeight.w800,

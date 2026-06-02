@@ -1,16 +1,20 @@
-import 'package:flutter/cupertino.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_instance/src/extension_instance.dart';
-import '../controller/apartment_controller.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../viewmodel/apartment_viewmodel.dart';
 import 'apartment_screen_content.dart';
 
-class ApartmentScreen extends StatelessWidget {
-  ApartmentScreen({super.key});
-
-  final ApartmentController controller = Get.find<ApartmentController>();
+class ApartmentScreen extends ConsumerWidget {
+  const ApartmentScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ApartmentScreenContent(controller: controller);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(apartmentFamilyProvider(null));
+    final viewModel = ref.read(apartmentFamilyProvider(null).notifier);
+
+    return ApartmentScreenContent(
+      state: state,
+      viewModel: viewModel,
+      sessionId: null,
+    );
   }
 }

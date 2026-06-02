@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/src/extension_navigation.dart';
 import '../services/storage_service.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -16,10 +14,11 @@ class HomeScreen extends StatelessWidget {
             ElevatedButton(
               onPressed: () async {
                 await StorageService.clearToken();
-
-                Get.offAllNamed('/');
+                if (context.mounted) {
+                  Navigator.pushReplacementNamed(context, '/');
+                }
               },
-              child: Text("Logout"),
+              child: const Text("Logout"),
             ),
           ],
         ),

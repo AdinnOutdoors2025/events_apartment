@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import '../constants/api_constants.dart';
 import '../model/get_list_model.dart';
@@ -135,6 +136,9 @@ class ApiService {
         body["maxTG"] = maxTG;
       }
 
+      if (kDebugMode) {
+        print("REQUEST BODY => $body");
+      }
       final response = await dio.post(
         ApiConstants.getExcelList,
         data: body,
@@ -163,6 +167,99 @@ class ApiService {
       return OrderHistoryModel.fromJson(response.data);
     } catch (e) {
       rethrow;
+    }
+  }
+
+  Future<void> updateOrderStatus({
+    required String orderId,
+    required int status,
+    PlatformFile? poDocument,
+    PlatformFile? statusDocument,
+    PlatformFile? voiceDocument,
+    String? additionalNotes,
+    String? closeLossReason,
+  }) async {
+    try {
+      final formData = FormData();
+
+      formData.fields.add(MapEntry("status", status.toString()));
+
+      if (additionalNotes?.isNotEmpty == true) {
+        formData.fields.add(MapEntry("additionalNotes", additionalNotes!));
+      }
+
+      if (closeLossReason?.isNotEmpty == true) {
+        formData.fields.add(MapEntry("closeLossReason", closeLossReason!));
+      }
+
+      if (poDocument != null) {
+        formData.files.add(
+          MapEntry(
+            "poDocument",
+            await MultipartFile.fromFile(
+              poDocument.path!,
+              filename: poDocument.name,
+            ),
+          ),
+        );
+      }
+
+      if (statusDocument != null) {
+        formData.files.add(
+          MapEntry(
+            "statusDocument",
+            await MultipartFile.fromFile(
+              statusDocument.path!,
+              filename: statusDocument.name,
+            ),
+          ),
+        );
+      }
+
+      if (voiceDocument != null) {
+        formData.files.add(
+          MapEntry(
+            "voiceDocument",
+            await MultipartFile.fromFile(
+              voiceDocument.path!,
+              filename: voiceDocument.name,
+            ),
+          ),
+        );
+      }
+
+      await dio.put(
+        "${ApiConstants.orderStatusUpdate}?orderId=$orderId",
+        data: formData,
+        options: Options(
+          headers: {
+            "isRequireAuth": true,
+            "Content-Type": "multipart/form-data",
+          },
+        ),
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> saveApartment({
+    required Map<String, dynamic> body,
+  }) async {
+    try {
+      await dio.post(
+        ApiConstants.apartmentAdd,
+        data: body,
+        options: Options(
+          headers: {
+            "isRequireAuth": true,
+          },
+        ),
+      );
+    } on DioException catch (e) {
+      throw handleError(e);
+    } catch (e) {
+      throw e.toString();
     }
   }
 }

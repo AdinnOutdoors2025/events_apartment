@@ -1,60 +1,5 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/src/extension_navigation.dart';
 
-import '../theme/app_colors.dart';
-
-/*class CustomSearchFilter extends StatelessWidget {
-  final ValueChanged<String> onChanged;
-  final String? hintText;
-
-  const CustomSearchFilter({
-    super.key,
-    required this.onChanged,
-    required this.hintText,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              onChanged: onChanged,
-              decoration: InputDecoration(
-                hintText: hintText,
-                hintStyle: TextStyle(fontSize: 14),
-                prefixIcon: Icon(Icons.search, size: 14),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: Colors.grey, width: 1.4),
-                ),
-                contentPadding: EdgeInsets.symmetric(vertical: 0),
-                border: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
-          ),
-
-          SizedBox(width: 8),
-
-          IconButton(
-            icon: Icon(Icons.calendar_today),
-            onPressed: () {
-              //  controller.pickDateRange();
-            },
-          ),
-          IconButton(icon: Icon(Icons.filter_list), onPressed: () {}),
-        ],
-      ),
-    );
-  }
-}*/
 class CustomSearchFilter extends StatelessWidget {
   final ValueChanged<String>? onSearchChanged;
   final VoidCallback? onDateTap;
@@ -134,37 +79,12 @@ class CustomSearchFilter extends StatelessWidget {
           if (showCalendar && showFilter) const SizedBox(width: 8),
 
           /// FILTER DROPDOWN
-          /* if (showFilter)
-            Container(
-              height: 48,
-              width: 48,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-                borderRadius: BorderRadius.circular(10),
-                color: Colors.white,
-              ),
-              child: PopupMenuButton<String>(
-                color: Colors.white,
-                surfaceTintColor: Colors.white,
-                position: PopupMenuPosition.under,
-                icon: const Icon(Icons.filter_list, size: 24),
-                onSelected: onFilterChanged,
-                itemBuilder: (context) {
-                  return (filterItems ?? []).map((item) {
-                    return PopupMenuItem<String>(
-                      value: item,
-                      child: Text(item),
-                    );
-                  }).toList();
-                },
-              ),
-            ),*/
           if (showFilter)
             Container(
               height: 48,
               width: 48,
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey.shade300),
+                border: Border.all(color: const Color(0xFFE0E0E0)),
                 borderRadius: BorderRadius.circular(12),
                 color: Colors.white,
               ),
@@ -172,25 +92,19 @@ class CustomSearchFilter extends StatelessWidget {
                 color: Colors.white,
                 surfaceTintColor: Colors.white,
                 position: PopupMenuPosition.under,
-
                 elevation: 8,
                 shadowColor: Colors.black.withOpacity(0.12),
-
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
-                  side: BorderSide(color: Colors.grey.shade200),
+                  side: const BorderSide(color: Color(0xFFEEEEEE)),
                 ),
-
                 constraints: const BoxConstraints(minWidth: 80),
-
                 icon: const Icon(
                   Icons.filter_list_rounded,
                   size: 24,
                   color: Colors.black87,
                 ),
-
                 onSelected: onFilterChanged,
-
                 itemBuilder: (context) {
                   return (filterItems ?? []).map((item) {
                     return PopupMenuItem<String>(

@@ -25,6 +25,7 @@ class OrderData {
   int? totalCount;
   int? totalPages;
   List<Booking>? bookings;
+  StatusCounts? statusCounts;
 
   OrderData({
     this.pageNumber,
@@ -32,6 +33,7 @@ class OrderData {
     this.totalCount,
     this.totalPages,
     this.bookings,
+    this.statusCounts,
   });
 
   factory OrderData.fromJson(Map<String, dynamic> json) => OrderData(
@@ -42,6 +44,9 @@ class OrderData {
     bookings: json["bookings"] == null
         ? []
         : List<Booking>.from(json["bookings"]!.map((x) => Booking.fromJson(x))),
+    statusCounts: json["statusCounts"] == null
+        ? null
+        : StatusCounts.fromJson(json["statusCounts"]),
   );
 
   Map<String, dynamic> toJson() => {
@@ -52,6 +57,7 @@ class OrderData {
     "bookings": bookings == null
         ? []
         : List<dynamic>.from(bookings!.map((x) => x.toJson())),
+    "statusCounts": statusCounts?.toJson(),
   };
 }
 
@@ -65,14 +71,14 @@ class Booking {
   DateTime? fromDate;
   DateTime? toDate;
   int? daysOfEvent;
-  int? daysOfApartment;
+  List<DailySchedule>? dailySchedule;
   int? promoterRequired;
   int? promoterCount;
   List<Promoter>? promoters;
   CustomerDetails? customerDetails;
   int? discountType;
   int? discountPercentage;
-  dynamic negotiationAmount;
+  int? finalAmount;
   int? sqfet;
   int? apartmentAmount;
   int? sqfetAmount;
@@ -87,11 +93,18 @@ class Booking {
   String? additionalNotes;
   String? closeLossReason;
   dynamic poDocument;
+  Document? document;
+  Document? voiceNote;
   OrderNote? orderNote;
+  bool? isMailSent;
+  dynamic mailSentAt;
+  String? createdBy;
+  String? updatedBy;
   List<OrderHistory>? orderHistory;
   DateTime? createdAt;
   DateTime? updatedAt;
   int? v;
+  String? orderStatusText;
   String? apartmentName;
   String? eventName;
 
@@ -105,14 +118,14 @@ class Booking {
     this.fromDate,
     this.toDate,
     this.daysOfEvent,
-    this.daysOfApartment,
+    this.dailySchedule,
     this.promoterRequired,
     this.promoterCount,
     this.promoters,
     this.customerDetails,
     this.discountType,
     this.discountPercentage,
-    this.negotiationAmount,
+    this.finalAmount,
     this.sqfet,
     this.apartmentAmount,
     this.sqfetAmount,
@@ -127,11 +140,18 @@ class Booking {
     this.additionalNotes,
     this.closeLossReason,
     this.poDocument,
+    this.document,
+    this.voiceNote,
     this.orderNote,
+    this.isMailSent,
+    this.mailSentAt,
+    this.createdBy,
+    this.updatedBy,
     this.orderHistory,
     this.createdAt,
     this.updatedAt,
     this.v,
+    this.orderStatusText,
     this.apartmentName,
     this.eventName,
   });
@@ -152,7 +172,11 @@ class Booking {
         : DateTime.parse(json["fromDate"]),
     toDate: json["toDate"] == null ? null : DateTime.parse(json["toDate"]),
     daysOfEvent: json["daysOfEvent"],
-    daysOfApartment: json["daysOfApartment"],
+    dailySchedule: json["dailySchedule"] == null
+        ? []
+        : List<DailySchedule>.from(
+            json["dailySchedule"]!.map((x) => DailySchedule.fromJson(x)),
+          ),
     promoterRequired: json["promoterRequired"],
     promoterCount: json["promoterCount"],
     promoters: json["promoters"] == null
@@ -165,7 +189,7 @@ class Booking {
         : CustomerDetails.fromJson(json["customerDetails"]),
     discountType: json["discountType"],
     discountPercentage: json["discountPercentage"],
-    negotiationAmount: json["negotiationAmount"],
+    finalAmount: json["finalAmount"],
     sqfet: json["sqfet"],
     apartmentAmount: json["apartmentAmount"],
     sqfetAmount: json["sqfetAmount"],
@@ -180,14 +204,24 @@ class Booking {
     additionalNotes: json["additionalNotes"],
     closeLossReason: json["closeLossReason"],
     poDocument: json["poDocument"],
+    document: json["document"] == null
+        ? null
+        : Document.fromJson(json["document"]),
+    voiceNote: json["voiceNote"] == null
+        ? null
+        : Document.fromJson(json["voiceNote"]),
     orderNote: json["orderNote"] == null
         ? null
         : OrderNote.fromJson(json["orderNote"]),
-    orderHistory: json["orderHistory"] == null
-        ? []
-        : List<OrderHistory>.from(
-            json["orderHistory"]!.map((x) => OrderHistory.fromJson(x)),
-          ),
+    isMailSent: json["isMailSent"],
+    mailSentAt: json["mailSentAt"],
+    createdBy: json["createdBy"],
+    updatedBy: json["updatedBy"],
+    orderHistory: json['orderHistory'] != null
+        ? (json['orderHistory'] as List)
+        .map((e) => OrderHistory.fromJson(e))
+        .toList()
+        : [],
     createdAt: json["createdAt"] == null
         ? null
         : DateTime.parse(json["createdAt"]),
@@ -195,6 +229,7 @@ class Booking {
         ? null
         : DateTime.parse(json["updatedAt"]),
     v: json["__v"],
+    orderStatusText: json["orderStatusText"],
     apartmentName: json["apartmentName"],
     eventName: json["eventName"],
   );
@@ -209,7 +244,9 @@ class Booking {
     "fromDate": fromDate?.toIso8601String(),
     "toDate": toDate?.toIso8601String(),
     "daysOfEvent": daysOfEvent,
-    "daysOfApartment": daysOfApartment,
+    "dailySchedule": dailySchedule == null
+        ? []
+        : List<dynamic>.from(dailySchedule!.map((x) => x.toJson())),
     "promoterRequired": promoterRequired,
     "promoterCount": promoterCount,
     "promoters": promoters == null
@@ -218,7 +255,7 @@ class Booking {
     "customerDetails": customerDetails?.toJson(),
     "discountType": discountType,
     "discountPercentage": discountPercentage,
-    "negotiationAmount": negotiationAmount,
+    "finalAmount": finalAmount,
     "sqfet": sqfet,
     "apartmentAmount": apartmentAmount,
     "sqfetAmount": sqfetAmount,
@@ -233,16 +270,104 @@ class Booking {
     "additionalNotes": additionalNotes,
     "closeLossReason": closeLossReason,
     "poDocument": poDocument,
+    "document": document?.toJson(),
+    "voiceNote": voiceNote?.toJson(),
     "orderNote": orderNote?.toJson(),
+    "isMailSent": isMailSent,
+    "mailSentAt": mailSentAt,
+    "createdBy": createdBy,
+    "updatedBy": updatedBy,
     "orderHistory": orderHistory == null
         ? []
-        : List<dynamic>.from(orderHistory!.map((x) => x.toJson())),
+        : List<dynamic>.from(orderHistory!.map((x) => x)),
     "createdAt": createdAt?.toIso8601String(),
     "updatedAt": updatedAt?.toIso8601String(),
     "__v": v,
+    "orderStatusText": orderStatusText,
     "apartmentName": apartmentName,
     "eventName": eventName,
   };
+}
+
+class OrderHistory {
+  final int? fromStatus;
+  final String? fromStatusText;
+  final int? toStatus;
+  final String? toStatusText;
+  final String? changedBy;
+  final String? changedAt;
+  final String? additionalNotes;
+  final DocumentModel? poDocument;
+  final DocumentModel? statusDocument;
+  final DocumentModel? voiceDocument;
+
+  OrderHistory({
+    this.fromStatus,
+    this.fromStatusText,
+    this.toStatus,
+    this.toStatusText,
+    this.changedBy,
+    this.changedAt,
+    this.additionalNotes,
+    this.poDocument,
+    this.statusDocument,
+    this.voiceDocument,
+  });
+
+  factory OrderHistory.fromJson(Map<String, dynamic> json) {
+    return OrderHistory(
+      fromStatus: json['fromStatus'],
+      fromStatusText: json['fromStatusText'],
+      toStatus: json['toStatus'],
+      toStatusText: json['toStatusText'],
+      changedBy: json['changedBy'],
+      changedAt: json['changedAt'],
+      additionalNotes: json['additionalNotes'],
+      poDocument: json['poDocument'] != null
+          ? DocumentModel.fromJson(json['poDocument'])
+          : null,
+      statusDocument: json['statusDocument'] != null
+          ? DocumentModel.fromJson(json['statusDocument'])
+          : null,
+      voiceDocument: json['voiceDocument'] != null
+          ? DocumentModel.fromJson(json['voiceDocument'])
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'fromStatus': fromStatus,
+      'fromStatusText': fromStatusText,
+      'toStatus': toStatus,
+      'toStatusText': toStatusText,
+      'changedBy': changedBy,
+      'changedAt': changedAt,
+      'additionalNotes': additionalNotes,
+      'poDocument': poDocument?.toJson(),
+      'statusDocument': statusDocument?.toJson(),
+      'voiceDocument': voiceDocument?.toJson(),
+    };
+  }
+}
+class DocumentModel {
+  final String? uploadedAt;
+
+  DocumentModel({
+    this.uploadedAt,
+  });
+
+  factory DocumentModel.fromJson(Map<String, dynamic> json) {
+    return DocumentModel(
+      uploadedAt: json['uploadedAt'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'uploadedAt': uploadedAt,
+    };
+  }
 }
 
 class ApartmentDetails {
@@ -283,6 +408,9 @@ class ApartmentDetails {
 }
 
 class CustomerDetails {
+  int? customerType;
+  int? gstNumber;
+  String? designation;
   String? brandOrCompanyName;
   String? contactPersonName;
   String? contactPersonPhoneNumber;
@@ -291,6 +419,9 @@ class CustomerDetails {
   String? customerId;
 
   CustomerDetails({
+    this.customerType,
+    this.gstNumber,
+    this.designation,
     this.brandOrCompanyName,
     this.contactPersonName,
     this.contactPersonPhoneNumber,
@@ -301,6 +432,9 @@ class CustomerDetails {
 
   factory CustomerDetails.fromJson(Map<String, dynamic> json) =>
       CustomerDetails(
+        customerType: json["customerType"],
+        gstNumber: json["gstNumber"],
+        designation: json["designation"],
         brandOrCompanyName: json["brandOrCompanyName"],
         contactPersonName: json["contactPersonName"],
         contactPersonPhoneNumber: json["contactPersonPhoneNumber"],
@@ -310,12 +444,54 @@ class CustomerDetails {
       );
 
   Map<String, dynamic> toJson() => {
+    "customerType": customerType,
+    "gstNumber": gstNumber,
+    "designation": designation,
     "brandOrCompanyName": brandOrCompanyName,
     "contactPersonName": contactPersonName,
     "contactPersonPhoneNumber": contactPersonPhoneNumber,
     "email": email,
     "additionalNotes": additionalNotes,
     "_customerId": customerId,
+  };
+}
+
+class DailySchedule {
+  int? days;
+  String? fromTime;
+  String? toTime;
+  String? notes;
+
+  DailySchedule({this.days, this.fromTime, this.toTime, this.notes});
+
+  factory DailySchedule.fromJson(Map<String, dynamic> json) => DailySchedule(
+    days: json["days"],
+    fromTime: json["fromTime"],
+    toTime: json["toTime"],
+    notes: json["notes"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "days": days,
+    "fromTime": fromTime,
+    "toTime": toTime,
+    "notes": notes,
+  };
+}
+
+class Document {
+  DateTime? uploadedAt;
+
+  Document({this.uploadedAt});
+
+  factory Document.fromJson(Map<String, dynamic> json) => Document(
+    uploadedAt: json["uploadedAt"] == null
+        ? null
+        : DateTime.parse(json["uploadedAt"]),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "uploadedAt": uploadedAt?.toIso8601String(),
   };
 }
 
@@ -336,70 +512,6 @@ class EventDetails {
     "_id": id,
     "eventName": eventName,
     "amount": amount,
-  };
-}
-
-class OrderHistory {
-  dynamic fromStatus;
-  int? toStatus;
-  String? changedBy;
-  DateTime? changedAt;
-  String? remarks;
-  String? additionalNotes;
-  dynamic negotiationAmount;
-  PoDocument? poDocument;
-
-  OrderHistory({
-    this.fromStatus,
-    this.toStatus,
-    this.changedBy,
-    this.changedAt,
-    this.remarks,
-    this.additionalNotes,
-    this.negotiationAmount,
-    this.poDocument,
-  });
-
-  factory OrderHistory.fromJson(Map<String, dynamic> json) => OrderHistory(
-    fromStatus: json["fromStatus"],
-    toStatus: json["toStatus"],
-    changedBy: json["changedBy"],
-    changedAt: json["changedAt"] == null
-        ? null
-        : DateTime.parse(json["changedAt"]),
-    remarks: json["remarks"],
-    additionalNotes: json["additionalNotes"],
-    negotiationAmount: json["negotiationAmount"],
-    poDocument: json["poDocument"] == null
-        ? null
-        : PoDocument.fromJson(json["poDocument"]),
-  );
-
-  Map<String, dynamic> toJson() => {
-    "fromStatus": fromStatus,
-    "toStatus": toStatus,
-    "changedBy": changedBy,
-    "changedAt": changedAt?.toIso8601String(),
-    "remarks": remarks,
-    "additionalNotes": additionalNotes,
-    "negotiationAmount": negotiationAmount,
-    "poDocument": poDocument?.toJson(),
-  };
-}
-
-class PoDocument {
-  DateTime? uploadedAt;
-
-  PoDocument({this.uploadedAt});
-
-  factory PoDocument.fromJson(Map<String, dynamic> json) => PoDocument(
-    uploadedAt: json["uploadedAt"] == null
-        ? null
-        : DateTime.parse(json["uploadedAt"]),
-  );
-
-  Map<String, dynamic> toJson() => {
-    "uploadedAt": uploadedAt?.toIso8601String(),
   };
 }
 
@@ -464,4 +576,64 @@ class Promoter {
     "promoterAmount": promoterAmount,
     "_promoterId": promoterId,
   };
+}
+
+class StatusCounts {
+  CloseWon? enquiry;
+  CloseWon? needAnalysis;
+  CloseWon? proposalPriceQuote;
+  CloseWon? negotiationReview;
+  CloseWon? closeWon;
+  CloseWon? closedLoss;
+
+  StatusCounts({
+    this.enquiry,
+    this.needAnalysis,
+    this.proposalPriceQuote,
+    this.negotiationReview,
+    this.closeWon,
+    this.closedLoss,
+  });
+
+  factory StatusCounts.fromJson(Map<String, dynamic> json) => StatusCounts(
+    enquiry: json["Enquiry"] == null
+        ? null
+        : CloseWon.fromJson(json["Enquiry"]),
+    needAnalysis: json["Need Analysis"] == null
+        ? null
+        : CloseWon.fromJson(json["Need Analysis"]),
+    proposalPriceQuote: json["Proposal & Price Quote"] == null
+        ? null
+        : CloseWon.fromJson(json["Proposal & Price Quote"]),
+    negotiationReview: json["Negotiation & Review"] == null
+        ? null
+        : CloseWon.fromJson(json["Negotiation & Review"]),
+    closeWon: json["Close Won"] == null
+        ? null
+        : CloseWon.fromJson(json["Close Won"]),
+    closedLoss: json["Closed Loss"] == null
+        ? null
+        : CloseWon.fromJson(json["Closed Loss"]),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "Enquiry": enquiry?.toJson(),
+    "Need Analysis": needAnalysis?.toJson(),
+    "Proposal & Price Quote": proposalPriceQuote?.toJson(),
+    "Negotiation & Review": negotiationReview?.toJson(),
+    "Close Won": closeWon?.toJson(),
+    "Closed Loss": closedLoss?.toJson(),
+  };
+}
+
+class CloseWon {
+  int? count;
+  int? totalAmount;
+
+  CloseWon({this.count, this.totalAmount});
+
+  factory CloseWon.fromJson(Map<String, dynamic> json) =>
+      CloseWon(count: json["count"], totalAmount: json["totalAmount"]);
+
+  Map<String, dynamic> toJson() => {"count": count, "totalAmount": totalAmount};
 }

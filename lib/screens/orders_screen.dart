@@ -1,22 +1,20 @@
-import 'package:apartment_project/controller/order_controller.dart';
-import 'package:flutter/foundation.dart';
+/*
 import 'package:flutter/material.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_instance/src/extension_instance.dart';
-import 'package:get/get_navigation/src/extension_navigation.dart';
-import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../model/order_history_model.dart';
 import '../theme/app_colors.dart';
 import '../utils/helpers.dart';
 import '../widgets/custom_searchfilter.dart';
+import '../viewmodel/order_viewmodel.dart';
 
-class OrdersScreen extends StatelessWidget {
-  OrdersScreen({super.key});
-
-  final controller = Get.find<OrderController>();
+class OrdersScreen extends ConsumerWidget {
+  const OrdersScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(orderViewModelProvider);
+    final viewModel = ref.read(orderViewModelProvider.notifier);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -26,7 +24,7 @@ class OrdersScreen extends StatelessWidget {
         surfaceTintColor: Colors.white,
         centerTitle: true,
         leading: IconButton(
-          onPressed: () => Get.back(),
+          onPressed: () => Navigator.maybePop(context),
           icon: const Icon(Icons.arrow_back, color: Colors.black),
         ),
         title: const Text(
@@ -34,14 +32,13 @@ class OrdersScreen extends StatelessWidget {
           style: TextStyle(color: AppColors.red, fontWeight: FontWeight.w500),
         ),
       ),
-
       body: Column(
         children: [
           CustomSearchFilter(
             hintText: "Search...",
             showCalendar: true,
             showFilter: true,
-            filterItems: [
+            filterItems: const [
               "All",
               "Enquiry",
               "Need analysis",
@@ -50,9 +47,7 @@ class OrdersScreen extends StatelessWidget {
               "Close Won",
               "Closed loss",
             ],
-
             onSearchChanged: (value) {},
-
             onDateTap: () async {
               DateTimeRange? pickedDate = await showDateRangePicker(
                 context: context,
@@ -65,57 +60,47 @@ class OrdersScreen extends StatelessWidget {
               );
 
               if (pickedDate != null) {
-                print(pickedDate.start);
-                print(pickedDate.end);
+                debugPrint(pickedDate.start.toString());
+                debugPrint(pickedDate.end.toString());
               }
             },
-
             onFilterChanged: (value) {},
           ),
-
           const SizedBox(height: 4),
-
           Expanded(
-            child: Obx(() {
-              /// LOADING
-              if (controller.isLoading.value /*&& controller.orderList.isEmpty*/) {
-                return const Center(child: CircularProgressIndicator());
-              }
+            child: Builder(
+              builder: (context) {
+                if (state.isLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-              /// EMPTY
-              if (controller.orderList.isEmpty) {
-                return const Center(child: Text("No Orders Found"));
-              }
+                if (state.orderList.isEmpty) {
+                  return const Center(child: Text("No Orders Found"));
+                }
 
-              return RefreshIndicator(
-                onRefresh: controller.refreshOrders,
-                child: ListView.separated(
-                  controller: controller.scrollController,
-                  physics: AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(14),
+                return RefreshIndicator(
+                  onRefresh: viewModel.refreshOrders,
+                  child: ListView.separated(
+                    controller: viewModel.scrollController,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(14),
+                    itemCount: state.orderList.length + (state.isPaginationLoading ? 1 : 0),
+                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      if (index == state.orderList.length) {
+                        return const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      }
 
-                  itemCount:
-                      controller.orderList.length +
-                      (controller.isPaginationLoading.value ? 1 : 0),
-
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
-
-                  itemBuilder: (context, index) {
-                    /// PAGINATION LOADER
-                    if (index == controller.orderList.length) {
-                      return const Padding(
-                        padding: EdgeInsets.all(12),
-                        child: Center(child: CircularProgressIndicator()),
-                      );
-                    }
-
-                    final booking = controller.orderList[index];
-
-                    return ApartmentOrderCard(booking: booking);
-                  },
-                ),
-              );
-            }),
+                      final booking = state.orderList[index];
+                      return ApartmentOrderCard(booking: booking);
+                    },
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -151,15 +136,6 @@ class ApartmentOrderCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /* ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: Image.network(
-              order.imageUrl,
-              height: 84,
-              width: 84,
-              fit: BoxFit.cover,
-            ),
-          ),*/
           Container(
             height: 60,
             width: 60,
@@ -170,9 +146,7 @@ class ApartmentOrderCard extends StatelessWidget {
             ),
             child: Icon(Icons.apartment_rounded, size: 40, color: statusColor),
           ),
-
           const SizedBox(width: 12),
-
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,7 +160,6 @@ class ApartmentOrderCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 6),
-
                 Text(
                   booking.customerDetails?.brandOrCompanyName ?? "-",
                   maxLines: 1,
@@ -198,7 +171,6 @@ class ApartmentOrderCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-
                 Text(
                   booking.apartmentDetails?.apartmentName ??
                       booking.apartmentName ??
@@ -212,7 +184,6 @@ class ApartmentOrderCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 5),
-
                 Row(
                   children: [
                     const Icon(
@@ -236,7 +207,6 @@ class ApartmentOrderCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 9),
-
                 Row(
                   children: [
                     const Icon(
@@ -247,7 +217,6 @@ class ApartmentOrderCard extends StatelessWidget {
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        //  "${Helpers().formatDate(booking.fromDate.toString())}-${Helpers().formatDate(booking.toDate.toString())}",
                         Helpers().formatDateRange(
                           booking.fromDate.toString(),
                           booking.toDate.toString(),
@@ -265,7 +234,6 @@ class ApartmentOrderCard extends StatelessWidget {
               ],
             ),
           ),
-
           const SizedBox(width: 8),
           SizedBox(
             width: 88,
@@ -291,9 +259,7 @@ class ApartmentOrderCard extends StatelessWidget {
                     ),
                   ),
                 ),
-
                 const Spacer(),
-
                 Text(
                   "${booking.daysOfApartment ?? 0} Days",
                   style: const TextStyle(
@@ -303,7 +269,6 @@ class ApartmentOrderCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 13),
-
                 Text(
                   "₹${booking.totalAmount ?? 0}",
                   maxLines: 1,
@@ -341,16 +306,6 @@ class ApartmentOrderCard extends StatelessWidget {
     }
   }
 
-  /*Color _getStatusColor(OrderStatus status) {
-    switch (status) {
-      case OrderStatus.approved:
-        return const Color(0xff16A34A);
-      case OrderStatus.pending:
-        return const Color(0xffF97316);
-      case OrderStatus.rejected:
-        return const Color(0xffEF4444);
-    }
-  }*/
   Color _getStatusColor(int? status) {
     switch (status) {
       case 1:
@@ -370,16 +325,6 @@ class ApartmentOrderCard extends StatelessWidget {
     }
   }
 
-  /*Color _getStatusBgColor(OrderStatus status) {
-    switch (status) {
-      case OrderStatus.approved:
-        return const Color(0xffEAFBF1);
-      case OrderStatus.pending:
-        return const Color(0xffFFF3E7);
-      case OrderStatus.rejected:
-        return const Color(0xffFEECEC);
-    }
-  }*/
   Color _getStatusBgColor(int? status) {
     switch (status) {
       case 1:
@@ -399,54 +344,4 @@ class ApartmentOrderCard extends StatelessWidget {
     }
   }
 }
-
-class ApartmentOrder {
-  final String orderId;
-  final String companyName;
-  final String apartmentName;
-  final String location;
-  final String dateRange;
-  final String days;
-  final String amount;
-  final OrderStatus status;
-
-  ApartmentOrder({
-    required this.orderId,
-    required this.companyName,
-    required this.apartmentName,
-    required this.location,
-    required this.dateRange,
-    required this.days,
-    required this.amount,
-    required this.status,
-  });
-}
-
-enum OrderStatus {
-  all,
-  enquiry,
-  needAnalysis,
-  proposalPriceQuote,
-  negotiationReview,
-  closeWon,
-  closedLoss,
-}
-
-OrderStatus getOrderStatus(int? status) {
-  switch (status) {
-    case 1:
-      return OrderStatus.enquiry;
-    case 2:
-      return OrderStatus.needAnalysis;
-    case 3:
-      return OrderStatus.proposalPriceQuote;
-    case 4:
-      return OrderStatus.negotiationReview;
-    case 5:
-      return OrderStatus.closeWon;
-    case 6:
-      return OrderStatus.closedLoss;
-    default:
-      return OrderStatus.all;
-  }
-}
+*/

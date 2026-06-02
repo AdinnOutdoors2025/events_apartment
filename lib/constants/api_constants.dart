@@ -6,4 +6,6 @@ class ApiConstants {
   static const String recentUpload = "/excel-recent-upload";
   static const String getExcelList = "/apartment-list";
   static const String orderHistory = "/order-booking-list";
+  static const String orderStatusUpdate = "/order-status";
+  static const String apartmentAdd = "/apartment-save";
 }
