@@ -7,7 +7,7 @@ class Validator {
   }
 
   static String? phone(String? value) {
-     if (value == null || value.trim().isEmpty) {
+    if (value == null || value.trim().isEmpty) {
       return "Phone number is required";
     }
 
@@ -19,10 +19,6 @@ class Validator {
   }
 
   static String? accountNumber(String? value) {
-    /*  if (value == null || value.trim().isEmpty) {
-      return "Account number is required";
-    }*/
-
     if (!RegExp(r'^[0-9]{9,18}$').hasMatch(value!.trim())) {
       return "Enter valid account number";
     }
@@ -31,10 +27,6 @@ class Validator {
   }
 
   static String? ifsc(String? value) {
-    /* if (value == null || value.trim().isEmpty) {
-      return "IFSC code is required";
-    }*/
-
     if (!RegExp(
       r'^[A-Z]{4}0[A-Z0-9]{6}$',
     ).hasMatch(value!.trim().toUpperCase())) {
@@ -65,12 +57,13 @@ class Validator {
 
     final numValue = int.tryParse(cleanedValue);
 
-    if (numValue == null || numValue <= 0) {
+    if (numValue == null || numValue < 0) {
       return "Enter valid $fieldName";
     }
 
     return null;
   }
+
   static String? optionalPositiveNumber(String? value) {
     if (value == null || value.trim().isEmpty) {
       return null; // not mandatory
@@ -80,7 +73,7 @@ class Validator {
 
     final numValue = int.tryParse(cleanedValue);
 
-    if (numValue == null || numValue <= 0) {
+    if (numValue == null || numValue < 0) {
       return "Enter a valid number";
     }
 
@@ -105,7 +98,7 @@ class Validator {
     return null;
   }
 
-  static String? name(String? value,String fieldName) {
+  static String? name(String? value, String fieldName) {
     if (value == null || value.trim().isEmpty) {
       return "$fieldName is required";
     }
@@ -118,10 +111,6 @@ class Validator {
   }
 
   static String? bankName(String? value) {
-    /*if (value == null || value.trim().isEmpty) {
-      return "Bank name is required";
-    }*/
-
     if (!RegExp(r'^[a-zA-Z.& ]+$').hasMatch(value!.trim())) {
       return "Enter valid bank name";
     }

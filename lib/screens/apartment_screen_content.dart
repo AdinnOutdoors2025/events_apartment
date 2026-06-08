@@ -24,6 +24,8 @@ class ApartmentScreenContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isSearching = viewModel.searchController.text.trim().isNotEmpty;
+    final resultCount = state.apartments.length;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -112,6 +114,38 @@ class ApartmentScreenContent extends ConsumerWidget {
               AppliedFilterChips(state: state, viewModel: viewModel),
 
             if (viewModel.appliedFilterCount > 0) const SizedBox(height: 5),
+            const SizedBox(height: 1),
+            /*if (!state.isLoading && state.apartments.isNotEmpty)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: */
+            /*Text(
+                "Showing ${state.apartments.length} of ${state.apartmentData?.totalCount ?? 0} apartments",
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey,
+                ),
+              ),*/
+            if (!state.isLoading && resultCount > 0)
+              Padding(
+                padding: const EdgeInsets.only(top: 2, bottom: 2),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    isSearching
+                        ? "$resultCount result${resultCount == 1 ? '' : 's'} found"
+                        : "Showing ${state.apartmentData?.totalCount ?? resultCount} apartments",
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+              ),
+
+            const SizedBox(height: 10),
             if (viewModel.isSessionBasedData && state.apartments.isNotEmpty)
               Container(
                 margin: const EdgeInsets.only(bottom: 14),
@@ -401,7 +435,12 @@ class FilterBottomSheet extends ConsumerWidget {
             ),
 
             Padding(
-              padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
+              padding: const EdgeInsets.only(
+                left: 10,
+                right: 10,
+                top: 10,
+                bottom: 4,
+              ),
               child: Row(
                 children: [
                   Expanded(
@@ -435,8 +474,8 @@ class FilterBottomSheet extends ConsumerWidget {
                   const SizedBox(width: 14),
                   Expanded(
                     child: SizedBox(
-                      height: 52,
-                      child: ElevatedButton(
+                      height: 45,
+                      child: OutlinedButton(
                         onPressed: () async {
                           await viewModel.applyFilterFromSheet();
 
@@ -444,10 +483,13 @@ class FilterBottomSheet extends ConsumerWidget {
                             Navigator.maybePop(context);
                           }
                         },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.red,
+                        style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.white,
-                          elevation: 0,
+                          backgroundColor: AppColors.red,
+                          side: const BorderSide(
+                            color: AppColors.red,
+                            width: 1.5,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
@@ -655,6 +697,8 @@ class ApartmentRateCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final rent = apartment.perDayRent ?? 0;
+
     return Container(
       padding: const EdgeInsets.all(9),
       decoration: BoxDecoration(
@@ -688,20 +732,20 @@ class ApartmentRateCard extends ConsumerWidget {
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
-                      ),*/
-                          /*highlightText(
-                        apartment.apartmentName ?? "",
-                        viewModel.searchController.text,
-                      )*/
-                          HighlightText(
-                            text: apartment.apartmentName ?? '-',
-                            searchText: viewModel.searchController.text,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black,
-                            ),
+                      ),*/ Padding(
+                        padding: const EdgeInsets.only(bottom: 2),
+                        child: HighlightText(
+                          text: apartment.apartmentName ?? '-',
+                          searchText: viewModel.searchController.text,
+                          maxLines: 2,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                            height: 1.25,
                           ),
+                        ),
+                      ),
                     ),
                     InkWell(
                       onTap: () async {
@@ -749,6 +793,7 @@ class ApartmentRateCard extends ConsumerWidget {
                     ),
                   ],
                 ),
+                //  const SizedBox(height: 2),
                 Row(
                   children: [
                     const Icon(
@@ -823,25 +868,17 @@ class ApartmentRateCard extends ConsumerWidget {
                         fontWeight: FontWeight.w800,
                       ),
                     ),
-                    /*Expanded(
-                      child: Text(
-                        "₹${Helpers().numberFormatter.format(apartment.perDayRent ?? 0)}/day",
-                        // "₹${apartment.perDayRent ?? 0}/day",
-                        maxLines: 1,
-                        textAlign: TextAlign.right,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Colors.green,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    )*/
-                    Expanded(
+
+                    Flexible(
                       child: HighlightText(
-                        text:
+                        /*   text:
                             "₹${Helpers().numberFormatter.format(apartment.perDayRent ?? 0)}/day",
-                        searchText: viewModel.searchController.text,
+                        searchText: viewModel.searchController.text,*/
+                        text: "₹${Helpers().numberFormatter.format(rent)}/day",
+                        searchText: _normalizeSearch(
+                          viewModel.searchController.text,
+                          rent,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.right,
@@ -870,6 +907,13 @@ class ApartmentRateCard extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  String _normalizeSearch(String search, int rent) {
+    if (search == rent.toString()) {
+      return Helpers().numberFormatter.format(rent);
+    }
+    return search;
   }
 }
 
@@ -990,20 +1034,20 @@ class AppliedFilterChips extends StatelessWidget {
           if (state.appliedCity != null)
             _chip(
               context,
-              "City: ${state.appliedCity}",
+              "City: ${state.appliedCity?.toLowerCase()}",
               viewModel.removeCityFilter,
             ),
           if (state.appliedLocation != null)
             _chip(
               context,
-              "Location: ${state.appliedLocation}",
+              "Location: ${state.appliedLocation?.toLowerCase()}",
               viewModel.removeLocationFilter,
             ),
 
           if (state.appliedGroupedName != null)
             _chip(
               context,
-              "Group: ${state.appliedGroupedName}",
+              "Group: ${state.appliedGroupedName?.toLowerCase()}",
               viewModel.removeGroupFilter,
             ),
 
@@ -1031,7 +1075,7 @@ class AppliedFilterChips extends StatelessWidget {
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 4.0),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5.0),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(100),
@@ -1091,17 +1135,32 @@ class HighlightText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (searchText.trim().isEmpty) {
-      return Text(text, style: style, maxLines: maxLines, overflow: overflow);
+      return RichText(
+        textAlign: textAlign,
+        maxLines: maxLines,
+        overflow: overflow ?? TextOverflow.clip,
+        text: TextSpan(text: text, style: style),
+      );
     }
 
     final lowerText = text.toLowerCase();
     final lowerSearch = searchText.toLowerCase();
+    String formattedSearch = lowerSearch;
+
+    final number = int.tryParse(
+      lowerSearch.replaceAll(',', '').replaceAll('₹', ''),
+    );
+
+    if (number != null) {
+      formattedSearch = Helpers().numberFormatter.format(number).toLowerCase();
+    }
 
     final spans = <TextSpan>[];
     int start = 0;
 
     while (true) {
-      final index = lowerText.indexOf(lowerSearch, start);
+      //  final index = lowerText.indexOf(lowerSearch, start);
+      final index = lowerText.indexOf(formattedSearch, start);
 
       if (index < 0) {
         spans.add(TextSpan(text: text.substring(start), style: style));
@@ -1114,15 +1173,18 @@ class HighlightText extends StatelessWidget {
 
       spans.add(
         TextSpan(
-          text: text.substring(index, index + searchText.length),
-          style: style?.copyWith(
-            fontWeight: FontWeight.bold,
-            backgroundColor: Colors.yellow,
-          ),
+          text: text.substring(index, index + formattedSearch.length),
+          style:
+              /*style?.copyWith( fontWeight: FontWeight.bold, backgroundColor: Colors.yellow, ),*/
+              style?.copyWith(
+                fontWeight: FontWeight.w800,
+                color: AppColors.red,
+                backgroundColor: const Color(0xFFFFF1F1),
+              ),
         ),
       );
 
-      start = index + searchText.length;
+      start = index + formattedSearch.length;
     }
 
     return RichText(

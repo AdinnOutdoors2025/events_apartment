@@ -37,7 +37,7 @@ class OverviewTab extends StatelessWidget {
             DetailRow("Event Date", deal.eventDate),
             //  DetailRow("Time", deal.eventTime),
             DetailRow("Expected Guests", deal.guests),
-            DetailRow("Setup Style", deal.setupStyle),
+          //  DetailRow("Setup Style", deal.setupStyle),
           ],
         ),
 

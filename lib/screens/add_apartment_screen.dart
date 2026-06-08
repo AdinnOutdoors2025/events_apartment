@@ -502,7 +502,10 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
                             decimal: true,
                           ),
                           inputFormatters: [
-                            FilteringTextInputFormatter.allow(RegExp(r'[1-5]')),
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[0-9.]'),
+                            ),
+                            LengthLimitingTextInputFormatter(4),
                           ],
                           validator: Validator.rating,
                           onChanged: notifier.updateRating,
@@ -510,7 +513,7 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
                         ),
                         SizedBox(height: 15),
                         CustomButton(
-                          text: widget.isEdit ? 'Edit' : 'Save',
+                          text: 'Save',
                           radius: 14,
                           textColor: Colors.white,
                           onPressed: () async {

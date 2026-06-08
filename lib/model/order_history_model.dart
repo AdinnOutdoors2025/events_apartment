@@ -90,7 +90,7 @@ class Booking {
   int? gstAmount;
   int? totalAmount;
   int? orderStatus;
-  String? additionalNotes;
+ // String? additionalNotes;
   String? closeLossReason;
   dynamic poDocument;
   Document? document;
@@ -137,7 +137,7 @@ class Booking {
     this.gstAmount,
     this.totalAmount,
     this.orderStatus,
-    this.additionalNotes,
+   // this.additionalNotes,
     this.closeLossReason,
     this.poDocument,
     this.document,
@@ -201,7 +201,7 @@ class Booking {
     gstAmount: json["gstAmount"],
     totalAmount: json["totalAmount"],
     orderStatus: json["orderStatus"],
-    additionalNotes: json["additionalNotes"],
+   // additionalNotes: json["additionalNotes"],
     closeLossReason: json["closeLossReason"],
     poDocument: json["poDocument"],
     document: json["document"] == null
@@ -267,7 +267,7 @@ class Booking {
     "gstAmount": gstAmount,
     "totalAmount": totalAmount,
     "orderStatus": orderStatus,
-    "additionalNotes": additionalNotes,
+   // "additionalNotes": additionalNotes,
     "closeLossReason": closeLossReason,
     "poDocument": poDocument,
     "document": document?.toJson(),

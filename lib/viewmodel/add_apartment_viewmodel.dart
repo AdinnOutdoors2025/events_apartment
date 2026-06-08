@@ -172,7 +172,6 @@ class ApartmentFormNotifier extends StateNotifier<ApartmentFormState> {
     state = state.copyWith(approxPeopleCount: value);
   }
 
-
   void updateFromTG(String value) {
     state = state.copyWith(fromTGValues: value.replaceAll(',', ''));
   }
@@ -180,7 +179,6 @@ class ApartmentFormNotifier extends StateNotifier<ApartmentFormState> {
   void updateToTG(String value) {
     state = state.copyWith(toTGValues: value.replaceAll(',', ''));
   }
-
 
   void updatePerDayRent(String value) {
     final cleanedValue = value.replaceAll(',', '');
@@ -206,15 +204,16 @@ class ApartmentFormNotifier extends StateNotifier<ApartmentFormState> {
       "UpiID": state.upiId,
       "Rating": state.rating,
       "ResidencyCount":
-          int.tryParse(state.residencyCount.replaceAll(',', '')) ?? 0,
+          int.tryParse(state.residencyCount.replaceAll(',', '')) ?? "",
       "ApproxPeopleCount":
-          int.tryParse(state.approxPeopleCount.replaceAll(',', '')) ?? 0,
-      "FromTGValues": int.tryParse(state.fromTGValues.replaceAll(',', '')) ?? 0,
+          int.tryParse(state.approxPeopleCount.replaceAll(',', '')) ?? "",
+      "FromTGValues":
+          int.tryParse(state.fromTGValues.replaceAll(',', '')) ?? "",
 
-      "ToTGValues": int.tryParse(state.toTGValues.replaceAll(',', '')) ?? 0,
+      "ToTGValues": int.tryParse(state.toTGValues.replaceAll(',', '')) ?? "",
 
       "PerDayRent":
-          int.tryParse(state.perDayRent.toString().replaceAll(',', '')) ?? 0,
+          int.tryParse(state.perDayRent.toString().replaceAll(',', '')) ?? "",
     };
 
     /* if (isEdit && state.apartmentId.isNotEmpty) {

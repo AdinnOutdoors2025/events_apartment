@@ -202,7 +202,10 @@ class ApartmentViewModel
           (apartment.location ?? '').toLowerCase().contains(searchText) ||
           (apartment.city ?? '').toLowerCase().contains(searchText) ||
           (apartment.residencyCount ?? 0).toString().contains(searchText) ||
-          (apartment.perDayRent ?? 0).toString().contains(searchText) ||
+          // (apartment.perDayRent ?? 0).toString().contains(searchText) ||
+          (apartment.perDayRent ?? 0).toString().contains(
+            searchText.replaceAll(',', ''),
+          ) ||
           (apartment.fromTGValues ?? 0).toString().contains(searchText) ||
           (apartment.toTGValues ?? 0).toString().contains(searchText);
     }).toList();
@@ -254,10 +257,7 @@ class ApartmentViewModel
         return;
       }
 
-      await getApartments(
-        search: _currentSearch,
-        isSearch: true,
-      );
+      await getApartments(search: _currentSearch, isSearch: true);
       return;
     }
     final rentChanged =

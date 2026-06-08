@@ -1245,7 +1245,7 @@ class KanbanDeal {
   final String eventName;
   final String eventDate;
   final String guests;
-  final String setupStyle;
+  //final String setupStyle;
   final String customerName;
   final String phone;
   final String email;
@@ -1266,7 +1266,7 @@ class KanbanDeal {
     required this.eventName,
     required this.eventDate,
     required this.guests,
-    required this.setupStyle,
+    //required this.setupStyle,
     required this.customerName,
     required this.phone,
     required this.email,
@@ -1327,9 +1327,9 @@ class KanbanDeal {
           : "${formatDate(booking.fromDate)} - ${formatDate(booking.toDate)}",
 
       guests: "${booking.promoterCount ?? 0} Promoters",
-      setupStyle: booking.additionalNotes?.trim().isNotEmpty == true
+   /*   setupStyle: booking.additionalNotes?.trim().isNotEmpty == true
           ? booking.additionalNotes!
-          : "-",
+          : "-",*/
       customerName: customer?.contactPersonName ?? "-",
       phone: customer?.contactPersonPhoneNumber ?? "-",
       email: customer?.email ?? "-",
