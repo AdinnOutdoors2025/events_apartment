@@ -26,6 +26,7 @@ class Datas {
   LatestFile? file;
   List<String>? locationFilter;
   List<String>? cityFilter;
+  List<String>? apartmentGroupNameFilter;
   PriceRange? priceRange;
   List<Apartment>? apartments;
 
@@ -37,6 +38,7 @@ class Datas {
     this.file,
     this.locationFilter,
     this.cityFilter,
+    this.apartmentGroupNameFilter,
     this.priceRange,
     this.apartments,
   });
@@ -53,6 +55,9 @@ class Datas {
     cityFilter: json["cityFilter"] == null
         ? []
         : List<String>.from(json["cityFilter"]!.map((x) => x)),
+    apartmentGroupNameFilter: json["apartmentGroupNameFilter"] == null
+        ? []
+        : List<String>.from(json["apartmentGroupNameFilter"]!.map((x) => x)),
     priceRange: json["priceRange"] == null
         ? null
         : PriceRange.fromJson(json["priceRange"]),
@@ -75,6 +80,9 @@ class Datas {
     "cityFilter": cityFilter == null
         ? []
         : List<dynamic>.from(cityFilter!.map((x) => x)),
+    "apartmentGroupNameFilter": apartmentGroupNameFilter == null
+        ? []
+        : List<dynamic>.from(apartmentGroupNameFilter!.map((x) => x)),
     "priceRange": priceRange?.toJson(),
     "apartments": apartments == null
         ? []
@@ -85,13 +93,15 @@ class Datas {
 class Apartment {
   String? id;
   String? apartmentId;
-  AtedBySession? createdBySession;
-  AtedBySession? lastUpdatedBySession;
+
+  /*AtedBySession? createdBySession;
+  AtedBySession? lastUpdatedBySession;*/
+  String? apartmentGroupName;
   String? apartmentName;
   String? apartmentAddress;
   String? city;
-  String? location;
   String? state;
+  String? location;
   String? jioLocation;
   String? photo;
   String? apartmentSummary;
@@ -106,7 +116,7 @@ class Apartment {
   int? fromTGValues;
   int? toTGValues;
   List<ExistingEventsHistory>? existingEventsHistory;
-  String? perDayRent;
+  int? perDayRent;
   String? updatedBy;
   DateTime? createdAt;
   DateTime? updatedAt;
@@ -116,8 +126,9 @@ class Apartment {
   Apartment({
     this.id,
     this.apartmentId,
-    this.createdBySession,
-    this.lastUpdatedBySession,
+    /* this.createdBySession,
+    this.lastUpdatedBySession,*/
+    this.apartmentGroupName,
     this.apartmentName,
     this.apartmentAddress,
     this.city,
@@ -148,32 +159,33 @@ class Apartment {
   factory Apartment.fromJson(Map<String, dynamic> json) => Apartment(
     id: json["_id"],
     apartmentId: json["apartmentId"],
-    createdBySession: json["createdBySession"] == null
+    /* createdBySession: json["createdBySession"] == null
         ? null
         : AtedBySession.fromJson(json["createdBySession"]),
     lastUpdatedBySession: json["lastUpdatedBySession"] == null
         ? null
-        : AtedBySession.fromJson(json["lastUpdatedBySession"]),
-    apartmentName: json["apartmentName"],
+        : AtedBySession.fromJson(json["lastUpdatedBySession"]),*/
+    apartmentGroupName: json["ApartmentGroupName"],
+    apartmentName: json["ApartmentName"],
     apartmentAddress: json["apartmentAddress"],
-    city: json["city"],
-    location: json["location"],
-    state: json["state"],
-    jioLocation: json["jioLocation"],
+    city: json["City"],
+    state: json["State"],
+    location: json["Location"],
+    jioLocation: json["GeoLocation"],
     photo: json["photo"],
     apartmentSummary: json["apartmentSummary"],
-    contactPersonName: json["contactPersonName"],
-    contactPersonPhone: json["contactPersonPhone"],
+    contactPersonName: json["ContactPersonName"],
+    contactPersonPhone: json["ContactPersonPhone"],
     email: json["email"],
     bankDetails: json["bankDetails"] == null
         ? null
         : BankDetail.fromJson(json["bankDetails"]),
-    permissionStatus: json["permissionStatus"],
-    rating: json["rating"],
-    residencyCount: json["residencyCount"],
-    approxPeopleCount: json["approxPeopleCount"],
-    fromTGValues: json["fromTGValues"],
-    toTGValues: json["toTGValues"],
+    permissionStatus: json["PermissionStatus"],
+    rating: json["Rating"],
+    residencyCount: json["ResidencyCount"],
+    approxPeopleCount: json["ApproxPeopleCount"],
+    fromTGValues: json["FromTGValues"],
+    toTGValues: json["ToTGValues"],
     existingEventsHistory: json["existingEventsHistory"] == null
         ? []
         : List<ExistingEventsHistory>.from(
@@ -181,7 +193,7 @@ class Apartment {
               (x) => ExistingEventsHistory.fromJson(x),
             ),
           ),
-    perDayRent: json["perDayRent"],
+    perDayRent: json["PerDayRent"],
     updatedBy: json["updatedBy"],
     createdAt: json["createdAt"] == null
         ? null
@@ -196,30 +208,31 @@ class Apartment {
   Map<String, dynamic> toJson() => {
     "_id": id,
     "apartmentId": apartmentId,
-    "createdBySession": createdBySession?.toJson(),
-    "lastUpdatedBySession": lastUpdatedBySession?.toJson(),
-    "apartmentName": apartmentName,
+    /* "createdBySession": createdBySession?.toJson(),
+    "lastUpdatedBySession": lastUpdatedBySession?.toJson(),*/
+    "ApartmentGroupName": apartmentGroupName,
+    "ApartmentName": apartmentName,
     "apartmentAddress": apartmentAddress,
-    "city": city,
-    "location": location,
-    "state": state,
-    "jioLocation": jioLocation,
+    "City": city,
+    "State": state,
+    "Location": location,
+    "GeoLocation": jioLocation,
     "photo": photo,
     "apartmentSummary": apartmentSummary,
-    "contactPersonName": contactPersonName,
-    "contactPersonPhone": contactPersonPhone,
+    "ContactPersonName": contactPersonName,
+    "ContactPersonPhone": contactPersonPhone,
     "email": email,
     "bankDetails": bankDetails?.toJson(),
-    "permissionStatus": permissionStatus,
-    "rating": rating,
-    "residencyCount": residencyCount,
-    "approxPeopleCount": approxPeopleCount,
-    "fromTGValues": fromTGValues,
-    "toTGValues": toTGValues,
+    "PermissionStatus": permissionStatus,
+    "Rating": rating,
+    "ResidencyCount": residencyCount,
+    "ApproxPeopleCount": approxPeopleCount,
+    "FromTGValues": fromTGValues,
+    "ToTGValues": toTGValues,
     "existingEventsHistory": existingEventsHistory == null
         ? []
         : List<dynamic>.from(existingEventsHistory!.map((x) => x.toJson())),
-    "perDayRent": perDayRent,
+    "PerDayRent": perDayRent,
     "updatedBy": updatedBy,
     "createdAt": createdAt?.toIso8601String(),
     "updatedAt": updatedAt?.toIso8601String(),
@@ -269,21 +282,21 @@ class BankDetail {
   });
 
   factory BankDetail.fromJson(Map<String, dynamic> json) => BankDetail(
-    accountName: json["accountHolderName"],
-    bankName: json["bankName"],
-    accountNumber: json["accountNumber"],
-    ifscCode: json["ifscCode"],
-    phoneNumber: json["phoneNumber"],
-    upiId: json["upiId"],
+    accountName: json["AccountHolderName"],
+    bankName: json["BankName"],
+    accountNumber: json["AccountNumber"],
+    ifscCode: json["IfscCode"],
+    phoneNumber: json["PhoneNumber"],
+    upiId: json["UpiID"],
   );
 
   Map<String, dynamic> toJson() => {
-    "accountHolderName": accountName,
-    "bankName": bankName,
+    "AccountHolderName": accountName,
+    "BankName": bankName,
     "accountNumber": accountNumber,
-    "ifscCode": ifscCode,
-    "phoneNumber": phoneNumber,
-    "upiId": upiId,
+    "IfscCode": ifscCode,
+    "PhoneNumber": phoneNumber,
+    "UpiID": upiId,
   };
 }
 

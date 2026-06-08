@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
+import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../model/recent_upload_model.dart';
 import '../model/upload_file_model.dart';
@@ -81,8 +83,8 @@ class UploadViewModel extends Notifier<UploadState> {
 
   Future<File?> pickExcelFile() async {
     try {
-     // final dynamic picker = (FilePicker as dynamic).platform;
-      FilePickerResult? result =  await FilePicker.pickFiles(
+      // final dynamic picker = (FilePicker as dynamic).platform;
+      FilePickerResult? result = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['xlsx'],
       );
@@ -170,9 +172,43 @@ class UploadViewModel extends Notifier<UploadState> {
       );
     }
   }
+
+  Future<void> downloadExcelTemplate() async {
+    try {
+      final ByteData data = await rootBundle.load(
+        'assets/templates/apartment_template.xlsx',
+      );
+
+      final Uint8List bytes = data.buffer.asUint8List();
+
+      if (kDebugMode) {
+        print('Template bytes length: ${bytes.length}');
+      }
+
+      final String? savedPath = await FileSaver.instance.saveAs(
+        name: 'apartment_template',
+        bytes: bytes,
+        fileExtension: 'xlsx',
+        mimeType: MimeType.microsoftExcel,
+      );
+
+      if (savedPath == null || savedPath.isEmpty) {
+        AppToast.showError('Download cancelled');
+        return;
+      }
+
+      AppToast.showSuccess('Excel template downloaded successfully');
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        print('Download template error: $e');
+        print(stackTrace);
+      }
+
+      AppToast.showError('Unable to download Excel template');
+    }
+  }
 }
 
-final uploadViewModelProvider =
-    NotifierProvider<UploadViewModel, UploadState>(
-      UploadViewModel.new,
-    );
+final uploadViewModelProvider = NotifierProvider<UploadViewModel, UploadState>(
+  UploadViewModel.new,
+);

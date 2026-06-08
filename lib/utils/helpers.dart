@@ -1,24 +1,29 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class Helpers {
-  String formatTGValue(double value) {
+  String formatIndianAmount(int? value) {
+    if (value == null) return '-';
+
+    if (value == 0) return '0';
+
     if (value >= 10000000) {
       final crore = value / 10000000;
-
-      if (crore % 1 == 0) {
-        return '₹${crore.toInt()}Cr';
-      }
-
-      return '₹${crore.toStringAsFixed(2)}Cr';
+      return '${crore % 1 == 0 ? crore.toInt() : crore.toStringAsFixed(1)}Cr';
     }
 
-    final lakh = value / 100000;
-
-    if (lakh % 1 == 0) {
-      return '₹${lakh.toInt()}L';
+    if (value >= 100000) {
+      final lakh = value / 100000;
+      return '${lakh % 1 == 0 ? lakh.toInt() : lakh.toStringAsFixed(1)}L';
+    }
+    if (value >= 1000) {
+      final thousand = value / 1000;
+      return '${thousand % 1 == 0 ? thousand.toInt() : thousand.toStringAsFixed(1)}K';
     }
 
-    return '₹${lakh.toStringAsFixed(1)}L';
+    return Helpers().numberFormatter.format(value);
   }
 
   String formatDateTime(String? date) {
@@ -35,19 +40,6 @@ class Helpers {
     }
   }
 
-  /*String formatDate(String? date) {
-    if (date == null || date.isEmpty) {
-      return "";
-    }
-
-    try {
-      final parsedDate = DateTime.parse(date).toLocal();
-
-      return DateFormat('dd MMM yyyy').format(parsedDate);
-    } catch (e) {
-      return "";
-    }
-  }*/
   String formatDateRange(String? fromDate, String? toDate) {
     if (fromDate == null ||
         toDate == null ||
@@ -60,16 +52,67 @@ class Helpers {
       final start = DateTime.parse(fromDate).toLocal();
       final end = DateTime.parse(toDate).toLocal();
 
-      /// SAME MONTH & YEAR
       if (start.month == end.month && start.year == end.year) {
         return "${start.day} - ${end.day} ${DateFormat('MMM yyyy').format(end)}";
       }
 
-      /// DIFFERENT MONTH/YEAR
       return "${DateFormat('dd MMM yyyy').format(start)} - "
           "${DateFormat('dd MMM yyyy').format(end)}";
     } catch (e) {
       return "";
     }
+  }
+
+  final numberFormatter = NumberFormat('#,##,##0', 'en_IN');
+
+  Future<void> makePhoneCall(String phoneNumber) async {
+    final uri = Uri.parse('tel:$phoneNumber');
+
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    }
+  }
+
+  Future<void> sendSms(String phoneNumber) async {
+    final uri = Uri.parse('sms:$phoneNumber');
+
+    try {
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+
+      debugPrint("SMS launched: $launched");
+    } catch (e) {
+      debugPrint("SMS error: $e");
+    }
+  }
+}
+
+class IndianCurrencyInputFormatter extends TextInputFormatter {
+  final NumberFormat formatter = NumberFormat('#,##,##0', 'en_IN');
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isEmpty) {
+      return newValue;
+    }
+
+    final cleanText = newValue.text.replaceAll(',', '');
+
+    final number = int.tryParse(cleanText);
+    if (number == null) {
+      return oldValue;
+    }
+
+    final formatted = formatter.format(number);
+
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
   }
 }

@@ -247,6 +247,7 @@ class LoginForm extends StatelessWidget {
               },
               radius: 14,
               textColor: Colors.white,
+              borderColor: AppColors.red,
             ),
           ],
         ),

@@ -1,5 +1,6 @@
-import 'package:apartment_project/screens/apartment_details_screen.dart';
+import 'package:apartment_project/utils/helpers.dart';
 import 'package:apartment_project/widgets/custom_button.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../viewmodel/apartment_viewmodel.dart';
@@ -7,8 +8,9 @@ import '../model/get_list_model.dart';
 import '../theme/app_colors.dart';
 import '../widgets/custom_dropdown.dart';
 import 'add_apartment_screen.dart';
+import 'apartment_details_screen.dart';
 
-class ApartmentScreenContent extends StatelessWidget {
+class ApartmentScreenContent extends ConsumerWidget {
   final ApartmentState state;
   final ApartmentViewModel viewModel;
   final String? sessionId;
@@ -21,7 +23,7 @@ class ApartmentScreenContent extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -30,16 +32,6 @@ class ApartmentScreenContent extends StatelessWidget {
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.white,
         centerTitle: true,
-       /* leading: IconButton(
-          onPressed: () {
-            Navigator.maybePop(context);
-          },
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: Colors.black,
-            size: 21,
-          ),
-        ),*/
         title: const Text(
           'Apartment Rate Card',
           style: TextStyle(
@@ -61,23 +53,14 @@ class ApartmentScreenContent extends StatelessWidget {
                     onPressed: () {
                       showModalBottomSheet(
                         context: context,
+                        useRootNavigator: true,
                         isScrollControlled: true,
                         shape: const RoundedRectangleBorder(
                           borderRadius: BorderRadius.vertical(
                             top: Radius.circular(20),
                           ),
                         ),
-                        /* builder: (_) => FilterBottomSheet(
-                          state: state,
-                          viewModel: viewModel,
-                        ),*/
-                        /* builder: (_) => const FilterBottomSheet(
-
-                        ),*/
-                        builder: (_) => FilterBottomSheet(
-                          // sessionId: state.currentSessionId,
-                          sessionId: sessionId,
-                        ),
+                        builder: (_) => FilterBottomSheet(sessionId: sessionId),
                       );
                     },
                     icon: const Icon(
@@ -123,7 +106,12 @@ class ApartmentScreenContent extends StatelessWidget {
         child: Column(
           children: [
             _SearchBox(viewModel: viewModel),
+
             const SizedBox(height: 14),
+            if (viewModel.appliedFilterCount > 0)
+              AppliedFilterChips(state: state, viewModel: viewModel),
+
+            if (viewModel.appliedFilterCount > 0) const SizedBox(height: 5),
             if (viewModel.isSessionBasedData && state.apartments.isNotEmpty)
               Container(
                 margin: const EdgeInsets.only(bottom: 14),
@@ -194,16 +182,16 @@ class ApartmentScreenContent extends StatelessWidget {
                         }
 
                         return GestureDetector(
-                          onTap: () {
-                            Navigator.of(
+                          onTap: () async {
+                            /* Navigator.of(
                               context,
                               rootNavigator: true,
                             ).pushNamed(
                               '/apartmentDetails',
                               arguments: items[index],
-                            );
+                            );*/
 
-                            /*Navigator.push(
+                            Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) {
@@ -212,7 +200,7 @@ class ApartmentScreenContent extends StatelessWidget {
                                   );
                                 },
                               ),
-                            );*/
+                            );
                           },
                           child: ApartmentRateCard(
                             apartment: items[index],
@@ -233,14 +221,9 @@ class ApartmentScreenContent extends StatelessWidget {
 }
 
 class FilterBottomSheet extends ConsumerWidget {
-
   final String? sessionId;
 
-  const FilterBottomSheet({
-    super.key,
-
-    this.sessionId,
-  });
+  const FilterBottomSheet({super.key, this.sessionId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -253,197 +236,234 @@ class FilterBottomSheet extends ConsumerWidget {
     );
     return Container(
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.82,
+        maxHeight: MediaQuery.of(context).size.height * 0.80,
       ),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      child: SingleChildScrollView(
-        padding: EdgeInsets.only(
-          left: 20,
-          right: 20,
-          top: 10,
-          bottom:
-              MediaQuery.of(context).viewInsets.bottom +
-              MediaQuery.of(context).padding.bottom +
-              24,
-        ),
+      child: SafeArea(
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 54,
-              height: 5,
-              margin: const EdgeInsets.only(bottom: 22),
-              decoration: BoxDecoration(
-                color: const Color(0xFFD8D8D8),
-                borderRadius: BorderRadius.circular(20),
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+              child: Column(
+                children: [
+                  Container(
+                    width: 54,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFD8D8D8),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      const Expanded(
+                        child: Center(
+                          child: Text(
+                            'Filter Apartments',
+                            style: TextStyle(
+                              color: AppColors.red,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: const Icon(Icons.close_rounded, size: 28),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-            Row(
-              children: [
-                const Expanded(
-                  child: Center(
-                    child: Text(
-                      'Filter Apartments',
-                      style: TextStyle(
-                        color: AppColors.red,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.maybePop(context);
-                  },
-                  child: const Icon(
-                    Icons.close_rounded,
-                    size: 28,
-                    color: Colors.black87,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 26),
-            CustomDropdown(
-              title: 'Location',
-              hint: 'Select location',
-              dropdownKey: 'Location',
-              value: state.selectedLocation,
-              items: state.locations,
-              onChanged: (value) {
-                viewModel.setSelectedLocation(value);
-              },
-              openedDropdown: state.openedDropdown,
-              toggleDropdown: viewModel.toggleDropdown,
-            ),
-            const SizedBox(height: 22),
-            CustomDropdown(
-              title: 'City',
-              hint: 'Select city',
-              value: state.selectedCity,
-              items: state.cities,
-              onChanged: (value) {
-                viewModel.setSelectedCity(value);
-              },
-              openedDropdown: state.openedDropdown,
-              dropdownKey: 'City',
-              toggleDropdown: viewModel.toggleDropdown,
-            ),
-            const SizedBox(height: 26),
-            Builder(
-              builder: (context) {
-                final range = state.campaignPriceRange;
-                final isChanged =
-                    range.start.round() != state.minCampaignRent.round() ||
-                    range.end.round() != state.maxCampaignRent.round();
-
-                return RangeFilterTile(
-                  title: 'Campaign Price Range (₹ / Day)',
-                  values: range,
-                  min: state.minCampaignRent,
-                  max: state.maxCampaignRent,
-                  step: 1000,
-                  isChanged: isChanged,
-                  startText: '₹${range.start.round()}',
-                  endText: '₹${range.end.round()}',
-                  minText: '₹${state.minCampaignRent.round()}',
-                  maxText: '₹${state.maxCampaignRent.round()}',
-                  onChanged: (value) {
-                    viewModel.setCampaignPriceRange(value);
-                  },
-                );
-              },
-            ),
-            const SizedBox(height: 22),
-            Builder(
-              builder: (context) {
-                final range = state.tgValueRange;
-                final isChanged =
-                    range.start.round() != state.minTG.round() ||
-                    range.end.round() != state.maxTG.round();
-
-                return RangeFilterTile(
-                  title: 'TG Value Range',
-                  values: range,
-                  min: state.minTG,
-                  max: state.maxTG,
-                  step: 50,
-                  isChanged: isChanged,
-                  startText: '₹${range.start.round()}',
-                  endText: '₹${range.end.round()}',
-                  minText: '₹${state.minTG.round()}',
-                  maxText: '₹${state.maxTG.round()}',
-                  onChanged: (value) {
-                    viewModel.setTGValueRange(value);
-                  },
-                );
-              },
-            ),
-            const SizedBox(height: 30),
-            Row(
-              children: [
-                Expanded(
-                  child: SizedBox(
-                    height: 45,
-                    child: OutlinedButton(
-                      onPressed: () async {
-                        await viewModel.clearFiltersAndFetch();
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  children: [
+                    CustomDropdown(
+                      title: 'Apartment Group Name',
+                      hint: 'Select Group',
+                      value: state.selectedGroupedName,
+                      items: state.apartmentGroupName,
+                      onChanged: (value) {
+                        viewModel.setSelectedApartmentGroupName(value);
                       },
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.red,
-                        side: const BorderSide(
-                          color: AppColors.red,
-                          width: 1.5,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      child: const Text(
-                        'Reset',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
+                      openedDropdown: state.openedDropdown,
+                      dropdownKey: 'apartmentGroup',
+                      toggleDropdown: viewModel.toggleDropdown,
                     ),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: SizedBox(
-                    height: 45,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        await viewModel.applyFilterFromSheet();
 
-                        if (context.mounted) {
-                          Navigator.maybePop(context);
-                        }
+                    const SizedBox(height: 15),
+
+                    CustomDropdown(
+                      title: 'City',
+                      hint: 'Select city',
+                      value: state.selectedCity,
+                      items: state.cities,
+                      onChanged: viewModel.setSelectedCity,
+                      openedDropdown: state.openedDropdown,
+                      dropdownKey: 'City',
+                      toggleDropdown: viewModel.toggleDropdown,
+                    ),
+
+                    const SizedBox(height: 15),
+
+                    CustomDropdown(
+                      title: 'Location',
+                      hint: 'Select location',
+                      value: state.selectedLocation,
+                      items: state.locations,
+                      onChanged: viewModel.setSelectedLocation,
+                      openedDropdown: state.openedDropdown,
+                      dropdownKey: 'Location',
+                      toggleDropdown: viewModel.toggleDropdown,
+                    ),
+
+                    const SizedBox(height: 15),
+
+                    Builder(
+                      builder: (context) {
+                        final range = state.campaignPriceRange;
+                        final isChanged =
+                            range.start.round() !=
+                                state.minCampaignRent.round() ||
+                            range.end.round() != state.maxCampaignRent.round();
+
+                        return RangeFilterTile(
+                          title: 'Campaign Price Range (₹ / Day)',
+                          values: range,
+                          min: state.minCampaignRent,
+                          max: state.maxCampaignRent,
+                          step: 1000,
+                          isChanged: isChanged,
+
+                          startText: Helpers().formatIndianAmount(
+                            range.start.round(),
+                          ),
+                          endText: Helpers().formatIndianAmount(
+                            range.end.round(),
+                          ),
+                          minText: Helpers().formatIndianAmount(
+                            state.minCampaignRent.round(),
+                          ),
+                          maxText: Helpers().formatIndianAmount(
+                            state.maxCampaignRent.round(),
+                          ),
+                          onChanged: (value) {
+                            viewModel.setCampaignPriceRange(value);
+                          },
+                        );
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.red,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                    ),
+                    const SizedBox(height: 15),
+                    Builder(
+                      builder: (context) {
+                        final range = state.tgValueRange;
+                        final isChanged =
+                            range.start.round() != state.minTG.round() ||
+                            range.end.round() != state.maxTG.round();
+
+                        return RangeFilterTile(
+                          title: 'TG Value Range',
+                          values: range,
+                          min: state.minTG,
+                          max: state.maxTG,
+                          step: 50,
+                          isChanged: isChanged,
+                          startText: Helpers().formatIndianAmount(
+                            range.start.round(),
+                          ),
+                          endText: Helpers().formatIndianAmount(
+                            range.end.round(),
+                          ),
+                          minText: Helpers().formatIndianAmount(
+                            state.minTG.round(),
+                          ),
+                          maxText: Helpers().formatIndianAmount(
+                            state.maxTG.round(),
+                          ),
+                          onChanged: (value) {
+                            viewModel.setTGValueRange(value);
+                          },
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 15),
+                  ],
+                ),
+              ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: 45,
+                      child: OutlinedButton(
+                        onPressed: () async {
+                          await viewModel.clearFiltersAndFetch();
+                          Navigator.pop(context);
+                        },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.red,
+                          side: const BorderSide(
+                            color: AppColors.red,
+                            width: 1.5,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                         ),
-                      ),
-                      child: const Text(
-                        'Apply Filters',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
+                        child: const Text(
+                          'Reset',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: SizedBox(
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          await viewModel.applyFilterFromSheet();
+
+                          if (context.mounted) {
+                            Navigator.maybePop(context);
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.red,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: const Text(
+                          'Apply Filters',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -582,36 +602,48 @@ class _SearchBox extends StatelessWidget {
         ],
       ),
       child: TextField(
+        controller: viewModel.searchController,
         cursorColor: AppColors.red,
         onChanged: (value) {
-          viewModel.getApartments(search: value);
+          viewModel.searchApartments(value);
         },
         style: const TextStyle(
           fontSize: 14,
           color: AppColors.textGrey,
           fontWeight: FontWeight.w600,
         ),
-        decoration: const InputDecoration(
+        decoration: InputDecoration(
           hintText: 'Search apartments...',
-          hintStyle: TextStyle(
+          hintStyle: const TextStyle(
             color: Color(0xFF8A8FA3),
             fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
-          prefixIcon: Icon(
+          prefixIcon: const Icon(
             Icons.search_rounded,
             color: Color(0xFF7C8196),
             size: 23,
           ),
+          suffixIcon: viewModel.searchController.text.isNotEmpty
+              ? IconButton(
+                  icon: Icon(Icons.close),
+                  onPressed: () {
+                    viewModel.clearSearch();
+                  },
+                )
+              : null,
           border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
         ),
       ),
     );
   }
 }
 
-class ApartmentRateCard extends StatelessWidget {
+class ApartmentRateCard extends ConsumerWidget {
   final Apartment apartment;
   final ApartmentViewModel viewModel;
 
@@ -622,7 +654,7 @@ class ApartmentRateCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       padding: const EdgeInsets.all(9),
       decoration: BoxDecoration(
@@ -650,26 +682,43 @@ class ApartmentRateCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
-                      child: Text(
+                      child: /*Text(
                         apartment.apartmentName ?? "",
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
-                      ),
+                      ),*/
+                          /*highlightText(
+                        apartment.apartmentName ?? "",
+                        viewModel.searchController.text,
+                      )*/
+                          HighlightText(
+                            text: apartment.apartmentName ?? '-',
+                            searchText: viewModel.searchController.text,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black,
+                            ),
+                          ),
                     ),
                     InkWell(
                       onTap: () async {
                         final result = await Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) =>
-                                AddApartmentScreen(apartment: apartment),
+                            builder: (_) => AddApartmentScreen(
+                              apartment: apartment,
+                              showAppBar: true,
+                            ),
                           ),
                         );
 
                         if (result == true) {
-                          await viewModel.refreshApartments();
+                          ref
+                              .read(apartmentFamilyProvider(null).notifier)
+                              .getApartments();
                         }
                       },
                       borderRadius: BorderRadius.circular(12),
@@ -708,7 +757,7 @@ class ApartmentRateCard extends StatelessWidget {
                       size: 14,
                     ),
                     const SizedBox(width: 1),
-                    Text(
+                    /*Text(
                       "${apartment.location ?? ""}, ${apartment.city ?? ""}",
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -716,19 +765,51 @@ class ApartmentRateCard extends StatelessWidget {
                         fontSize: 12.5,
                         fontWeight: FontWeight.w300,
                       ),
+                    ),*/
+                    HighlightText(
+                      text:
+                          "${apartment.location ?? ""}, ${apartment.city ?? ""}",
+                      searchText: viewModel.searchController.text,
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w300,
+                        color: Colors.black,
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 11),
+
+                /*RateInfoRow(
+                  label: 'TG Value',
+                  value:
+                      (apartment.fromTGValues == 0 && apartment.toTGValues == 0)
+                      ? '-'
+                      : "${Helpers().formatIndianAmount(apartment.fromTGValues)} - "
+                            "${Helpers().formatIndianAmount(apartment.toTGValues)}",
+                ),*/
                 RateInfoRow(
                   label: 'TG Value',
                   value:
-                      "${apartment.fromTGValues ?? 0} - ${apartment.toTGValues ?? 0}",
+                      (apartment.fromTGValues == 0 && apartment.toTGValues == 0)
+                      ? '-'
+                      : "${Helpers().formatIndianAmount(apartment.fromTGValues)} - "
+                            "${Helpers().formatIndianAmount(apartment.toTGValues)}",
+                  searchText: viewModel.searchController.text,
                 ),
                 const SizedBox(height: 7),
+                /* RateInfoRow(
+                  label: 'Total Residences',
+                  value: Helpers().numberFormatter.format(
+                    apartment.residencyCount ?? 0,
+                  ),
+                ),*/
                 RateInfoRow(
                   label: 'Total Residences',
-                  value: "${apartment.residencyCount ?? 0}",
+                  value: Helpers().numberFormatter.format(
+                    apartment.residencyCount ?? 0,
+                  ),
+                  searchText: viewModel.searchController.text,
                 ),
                 const SizedBox(height: 7),
                 Row(
@@ -742,12 +823,28 @@ class ApartmentRateCard extends StatelessWidget {
                         fontWeight: FontWeight.w800,
                       ),
                     ),
-                    Expanded(
+                    /*Expanded(
                       child: Text(
-                        "₹${apartment.perDayRent ?? 0}/day",
+                        "₹${Helpers().numberFormatter.format(apartment.perDayRent ?? 0)}/day",
+                        // "₹${apartment.perDayRent ?? 0}/day",
                         maxLines: 1,
                         textAlign: TextAlign.right,
                         overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.green,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    )*/
+                    Expanded(
+                      child: HighlightText(
+                        text:
+                            "₹${Helpers().numberFormatter.format(apartment.perDayRent ?? 0)}/day",
+                        searchText: viewModel.searchController.text,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.right,
                         style: const TextStyle(
                           color: Colors.green,
                           fontSize: 16,
@@ -817,8 +914,14 @@ class _ApartmentImage extends StatelessWidget {
 class RateInfoRow extends StatelessWidget {
   final String label;
   final String value;
+  final String searchText;
 
-  const RateInfoRow({super.key, required this.label, required this.value});
+  const RateInfoRow({
+    super.key,
+    required this.label,
+    required this.value,
+    this.searchText = '',
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -836,20 +939,197 @@ class RateInfoRow extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: Text(
-              value,
-              maxLines: 1,
-              textAlign: TextAlign.right,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: AppColors.textGrey,
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: HighlightText(
+                text: value,
+                searchText: searchText,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: AppColors.textGrey,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class AppliedFilterChips extends StatelessWidget {
+  final ApartmentState state;
+  final ApartmentViewModel viewModel;
+
+  const AppliedFilterChips({
+    super.key,
+    required this.state,
+    required this.viewModel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final rentChanged =
+        state.appliedCampaignRange.start.round() !=
+            state.minCampaignRent.round() ||
+        state.appliedCampaignRange.end.round() != state.maxCampaignRent.round();
+
+    final tgChanged =
+        state.appliedTGRange.start.round() != state.minTG.round() ||
+        state.appliedTGRange.end.round() != state.maxTG.round();
+
+    return SizedBox(
+      height: 40,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          _clearAllChip(),
+          if (state.appliedCity != null)
+            _chip(
+              context,
+              "City: ${state.appliedCity}",
+              viewModel.removeCityFilter,
+            ),
+          if (state.appliedLocation != null)
+            _chip(
+              context,
+              "Location: ${state.appliedLocation}",
+              viewModel.removeLocationFilter,
+            ),
+
+          if (state.appliedGroupedName != null)
+            _chip(
+              context,
+              "Group: ${state.appliedGroupedName}",
+              viewModel.removeGroupFilter,
+            ),
+
+          if (rentChanged)
+            _chip(
+              context,
+              "Rent: ${Helpers().formatIndianAmount(state.appliedCampaignRange.start.round())} - ${Helpers().formatIndianAmount(state.appliedCampaignRange.end.round())}",
+
+              viewModel.removeRentFilter,
+            ),
+
+          if (tgChanged)
+            _chip(
+              context,
+              "TG: ${Helpers().formatIndianAmount(state.appliedTGRange.start.round())} - ${Helpers().formatIndianAmount(state.appliedTGRange.end.round())}",
+              viewModel.removeTGFilter,
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _chip(BuildContext context, String label, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 4.0),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(100),
+          border: Border.all(color: Colors.grey[300]!),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.close, color: Color(0xFFE5212A), size: 13),
+            SizedBox(width: 5),
+            Text(label, style: TextStyle(fontSize: 11)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _clearAllChip() {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: GestureDetector(
+        onTap: () {
+          viewModel.clearFiltersAndFetch();
+        },
+        child: Container(
+          margin: const EdgeInsets.only(top: 4.0, bottom: 4.0),
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFF0EF),
+            shape: BoxShape.circle,
+            border: Border.all(color: const Color(0xFFFBBFBC)),
+          ),
+          child: const Icon(Icons.close, color: Color(0xFFE5212A), size: 16),
+        ),
+      ),
+    );
+  }
+}
+
+class HighlightText extends StatelessWidget {
+  final String text;
+  final String searchText;
+  final TextStyle? style;
+  final int? maxLines;
+  final TextOverflow? overflow;
+  final TextAlign textAlign;
+
+  const HighlightText({
+    super.key,
+    required this.text,
+    required this.searchText,
+    this.style,
+    this.maxLines,
+    this.overflow,
+    this.textAlign = TextAlign.start,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (searchText.trim().isEmpty) {
+      return Text(text, style: style, maxLines: maxLines, overflow: overflow);
+    }
+
+    final lowerText = text.toLowerCase();
+    final lowerSearch = searchText.toLowerCase();
+
+    final spans = <TextSpan>[];
+    int start = 0;
+
+    while (true) {
+      final index = lowerText.indexOf(lowerSearch, start);
+
+      if (index < 0) {
+        spans.add(TextSpan(text: text.substring(start), style: style));
+        break;
+      }
+
+      if (index > start) {
+        spans.add(TextSpan(text: text.substring(start, index), style: style));
+      }
+
+      spans.add(
+        TextSpan(
+          text: text.substring(index, index + searchText.length),
+          style: style?.copyWith(
+            fontWeight: FontWeight.bold,
+            backgroundColor: Colors.yellow,
+          ),
+        ),
+      );
+
+      start = index + searchText.length;
+    }
+
+    return RichText(
+      textAlign: textAlign,
+      maxLines: maxLines,
+      overflow: overflow ?? TextOverflow.clip,
+      text: TextSpan(children: spans),
     );
   }
 }

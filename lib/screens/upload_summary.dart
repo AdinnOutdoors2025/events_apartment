@@ -47,6 +47,8 @@ class UploadSummary extends ConsumerWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.white,
         leading: IconButton(
           onPressed: () {
             Navigator.maybePop(context);

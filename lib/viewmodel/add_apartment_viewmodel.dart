@@ -1,15 +1,18 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../model/get_list_model.dart';
 import '../services/api_service.dart';
 
 class ApartmentFormState {
   final String apartmentId;
+  final String apartmentGroupName;
   final String apartmentName;
   final String city;
   final String state;
   final String location;
   final String jioLocation;
   final String contactPersonPhone;
+  final String contactPersonName;
   final String accountHolderName;
   final String bankName;
   final String accountNumber;
@@ -21,18 +24,20 @@ class ApartmentFormState {
   final String approxPeopleCount;
   final String fromTGValues;
   final String toTGValues;
-  final String perDayRent;
+  final int? perDayRent;
 
   const ApartmentFormState({
     this.apartmentId = '',
+    this.apartmentGroupName = '',
     this.apartmentName = '',
     this.city = '',
     this.state = '',
     this.location = '',
     this.jioLocation = '',
     this.contactPersonPhone = '',
+    this.contactPersonName = '-',
     this.accountHolderName = '',
-    this.bankName = '',
+    this.bankName = '-',
     this.accountNumber = '',
     this.ifscCode = '',
     this.phoneNumber = '',
@@ -42,17 +47,19 @@ class ApartmentFormState {
     this.approxPeopleCount = '',
     this.fromTGValues = '',
     this.toTGValues = '',
-    this.perDayRent = '',
+    this.perDayRent = 0,
   });
 
   ApartmentFormState copyWith({
     String? apartmentId,
+    String? apartmentGroupName,
     String? apartmentName,
     String? city,
     String? state,
     String? location,
     String? jioLocation,
     String? contactPersonPhone,
+    String? contactPersonName,
     String? accountHolderName,
     String? bankName,
     String? accountNumber,
@@ -64,16 +71,18 @@ class ApartmentFormState {
     String? approxPeopleCount,
     String? fromTGValues,
     String? toTGValues,
-    String? perDayRent,
+    int? perDayRent,
   }) {
     return ApartmentFormState(
       apartmentId: apartmentId ?? this.apartmentId,
+      apartmentGroupName: apartmentGroupName ?? this.apartmentGroupName,
       apartmentName: apartmentName ?? this.apartmentName,
       city: city ?? this.city,
       state: state ?? this.state,
       location: location ?? this.location,
       jioLocation: jioLocation ?? this.jioLocation,
       contactPersonPhone: contactPersonPhone ?? this.contactPersonPhone,
+      contactPersonName: contactPersonName ?? this.contactPersonName,
       accountHolderName: accountHolderName ?? this.accountHolderName,
       bankName: bankName ?? this.bankName,
       accountNumber: accountNumber ?? this.accountNumber,
@@ -94,6 +103,10 @@ class ApartmentFormNotifier extends StateNotifier<ApartmentFormState> {
   ApartmentFormNotifier(this._apiService) : super(const ApartmentFormState());
 
   final ApiService _apiService;
+
+  void updateApartmentGroupName(String value) {
+    state = state.copyWith(apartmentGroupName: value);
+  }
 
   void updateApartmentName(String value) {
     state = state.copyWith(apartmentName: value);
@@ -117,6 +130,10 @@ class ApartmentFormNotifier extends StateNotifier<ApartmentFormState> {
 
   void updateContactPhone(String value) {
     state = state.copyWith(contactPersonPhone: value);
+  }
+
+  void updatePersonName(String value) {
+    state = state.copyWith(contactPersonName: value);
   }
 
   void updateAccountHolder(String value) {
@@ -155,60 +172,89 @@ class ApartmentFormNotifier extends StateNotifier<ApartmentFormState> {
     state = state.copyWith(approxPeopleCount: value);
   }
 
+
   void updateFromTG(String value) {
-    state = state.copyWith(fromTGValues: value);
+    state = state.copyWith(fromTGValues: value.replaceAll(',', ''));
   }
 
   void updateToTG(String value) {
-    state = state.copyWith(toTGValues: value);
+    state = state.copyWith(toTGValues: value.replaceAll(',', ''));
   }
+
 
   void updatePerDayRent(String value) {
-    state = state.copyWith(perDayRent: value);
+    final cleanedValue = value.replaceAll(',', '');
+
+    state = state.copyWith(perDayRent: int.tryParse(cleanedValue) ?? 0);
   }
 
-  Future<void> saveApartment() async {
-
+  Future<Apartment> saveApartment({required bool isEdit}) async {
     final body = {
-      "apartmentName": state.apartmentName,
-      "city": state.city,
-      "location": state.location,
-      "state": state.state,
-      "jioLocation": state.jioLocation,
-      "contactPersonPhone": state.contactPersonPhone,
-      "accountHolderName": state.accountHolderName,
-      "bankName": state.bankName,
-      "accountNumber": state.accountNumber,
-      "ifscCode": state.ifscCode,
-      "phoneNumber": state.phoneNumber,
-      "upiId": state.upiId,
-      "rating": state.rating,
-      "residencyCount": int.tryParse(state.residencyCount) ?? 0,
-      "approxPeopleCount": int.tryParse(state.approxPeopleCount) ?? 0,
-      "fromTGValues": int.tryParse(state.fromTGValues) ?? 0,
-      "toTGValues": int.tryParse(state.toTGValues) ?? 0,
-      "perDayRent": int.tryParse(state.perDayRent) ?? 0,
+      "ApartmentGroupName": state.apartmentGroupName,
+      "ApartmentName": state.apartmentName,
+      "City": state.city,
+      "State": state.state,
+      "Location": state.location,
+      "GeoLocation": state.jioLocation,
+      "ContactPersonPhone": state.contactPersonPhone,
+      "ContactPersonName": state.contactPersonName,
+      "AccountHolderName": state.accountHolderName,
+      "BankName": state.bankName,
+      "AccountNumber": state.accountNumber,
+      "IfscCode": state.ifscCode,
+      "PhoneNumber": state.phoneNumber,
+      "UpiID": state.upiId,
+      "Rating": state.rating,
+      "ResidencyCount":
+          int.tryParse(state.residencyCount.replaceAll(',', '')) ?? 0,
+      "ApproxPeopleCount":
+          int.tryParse(state.approxPeopleCount.replaceAll(',', '')) ?? 0,
+      "FromTGValues": int.tryParse(state.fromTGValues.replaceAll(',', '')) ?? 0,
+
+      "ToTGValues": int.tryParse(state.toTGValues.replaceAll(',', '')) ?? 0,
+
+      "PerDayRent":
+          int.tryParse(state.perDayRent.toString().replaceAll(',', '')) ?? 0,
     };
 
-    if (state.apartmentId.isNotEmpty) {
+    /* if (isEdit && state.apartmentId.isNotEmpty) {
       body["apartmentId"] = state.apartmentId;
     }
-    await _apiService.saveApartment(body: body);
+    return await _apiService.saveApartment(body: body);*/
+    if (isEdit) {
+      body["apartmentId"] = state.apartmentId;
+    }
+
+    if (kDebugMode) {
+      print("SAVE MODE => ${isEdit ? 'EDIT' : 'ADD'}");
+      print("APARTMENT ID SENT => ${body["apartmentId"]}");
+      print("BODY => $body");
+    }
+
+    final apartment = await _apiService.saveApartment(body: body);
+
+    return apartment;
   }
 
   void resetForm() {
     state = const ApartmentFormState();
   }
 
+  void clearApartmentId() {
+    state = state.copyWith(apartmentId: '');
+  }
+
   void loadApartment(Apartment apartment) {
     state = state.copyWith(
       apartmentId: apartment.id ?? '',
+      apartmentGroupName: apartment.apartmentGroupName ?? '',
       apartmentName: apartment.apartmentName ?? '',
       city: apartment.city ?? '',
       location: apartment.location ?? '',
       state: apartment.state ?? '',
       jioLocation: apartment.jioLocation ?? '',
       contactPersonPhone: apartment.contactPersonPhone ?? '',
+      contactPersonName: apartment.contactPersonName ?? '',
       accountHolderName: apartment.bankDetails?.accountName ?? '',
       bankName: apartment.bankDetails?.bankName ?? '',
       accountNumber: apartment.bankDetails?.accountNumber ?? '',
@@ -220,7 +266,7 @@ class ApartmentFormNotifier extends StateNotifier<ApartmentFormState> {
       approxPeopleCount: apartment.approxPeopleCount?.toString() ?? '',
       fromTGValues: apartment.fromTGValues?.toString() ?? '',
       toTGValues: apartment.toTGValues?.toString() ?? '',
-      perDayRent: apartment.perDayRent?.toString() ?? '',
+      perDayRent: apartment.perDayRent,
     );
   }
 }

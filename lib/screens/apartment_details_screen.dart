@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../model/get_list_model.dart';
 import '../theme/app_colors.dart';
+import '../utils/helpers.dart';
 
 class ApartmentDetailsScreen extends ConsumerWidget {
   final Apartment apartment;
@@ -44,8 +45,6 @@ class ApartmentDetailsScreen extends ConsumerWidget {
                     const SizedBox(height: 5),
 
                     const _ApartmentTabs(),
-
-                    //  const SizedBox(height: 24),
                   ],
                 ),
               ),
@@ -110,6 +109,10 @@ class _OverviewTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isEdited =
+        apartment.createdAt != null &&
+        apartment.updatedAt != null &&
+        apartment.createdAt != apartment.updatedAt;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -141,19 +144,24 @@ class _OverviewTab extends StatelessWidget {
             DetailRowData(
               icon: Icons.groups_2_outlined,
               title: 'Total Residences',
-              value: '${apartment.residencyCount ?? '-'}',
+              value: Helpers().numberFormatter.format(
+                apartment.residencyCount ?? 0,
+              ),
             ),
             DetailRowData(
               icon: Icons.trip_origin_rounded,
               title: 'TG Value',
               value:
-                  '${apartment.fromTGValues ?? '-'} - ${apartment.toTGValues ?? '-'}',
+                  "${Helpers().formatIndianAmount(apartment.fromTGValues)} - ${Helpers().formatIndianAmount(apartment.toTGValues)}",
             ),
 
             DetailRowData(
               icon: Icons.star_border_rounded,
               title: 'Rating',
-              value: apartment.rating ?? '-',
+              value: '',
+              trailing: buildRatingStars(
+                double.tryParse(apartment.rating?.toString() ?? '0') ?? 0,
+              ),
             ),
             DetailRowData(
               icon: Icons.group_outlined,
@@ -163,11 +171,23 @@ class _OverviewTab extends StatelessWidget {
             DetailRowData(
               icon: Icons.currency_rupee_rounded,
               title: 'Apartment Rent / Day',
-              value: '₹${apartment.perDayRent ?? '-'}',
+              value:
+                  "₹${Helpers().numberFormatter.format(apartment.perDayRent ?? 0)}/day",
+              //   "₹${apartment.perDayRent ?? 0}/day",
               valueColor: Colors.green,
             ),
           ],
         ),
+        const SizedBox(height: 18),
+
+        if (isEdited) ...[
+          LastUpdatedInfoCard(
+            updatedBy: dashIfEmpty(apartment.updatedBy),
+            updatedOn: dashIfEmpty(
+              Helpers().formatDateTime(apartment.updatedAt.toString()),
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -197,17 +217,34 @@ class ApartmentImagePlaceholder extends StatelessWidget {
   }
 }
 
+Widget buildRatingStars(double rating) {
+  return Row(
+    mainAxisSize: MainAxisSize.min,
+    children: List.generate(5, (index) {
+      if (index + 1 <= rating) {
+        return const Icon(Icons.star, color: Colors.amber, size: 18);
+      } else if (index + 0.5 <= rating) {
+        return const Icon(Icons.star_half, color: Colors.amber, size: 18);
+      }
+
+      return const Icon(Icons.star_border, color: Colors.amber, size: 18);
+    }),
+  );
+}
+
 class DetailRowData {
   final IconData icon;
   final String title;
   final String value;
   final Color? valueColor;
+  final Widget? trailing;
 
   const DetailRowData({
     required this.icon,
     required this.title,
     required this.value,
     this.valueColor,
+    this.trailing,
   });
 }
 
@@ -221,7 +258,6 @@ class DetailsInfoCard extends StatelessWidget {
     return Column(
       children: List.generate(rows.length, (index) {
         final item = rows[index];
-        final isLast = index == rows.length - 1;
 
         return Column(
           children: [
@@ -243,32 +279,26 @@ class DetailsInfoCard extends StatelessWidget {
                       ),
                     ),
                   ),
-
-                  //   const SizedBox(width: 12),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      item.value,
-                      textAlign: TextAlign.right,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: item.valueColor ?? Colors.black,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                      ),
+                  Flexible(
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child:
+                          item.trailing ??
+                          Text(
+                            item.value,
+                            textAlign: TextAlign.right,
+                            style: TextStyle(
+                              color: item.valueColor ?? Colors.black,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
                     ),
                   ),
                   SizedBox(width: 12),
                 ],
               ),
             ),
-
-            /*   if (!isLast)
-              Divider(
-                height: 1,
-                thickness: 1,
-                color: AppColors.border.withOpacity(0.7),
-              ),*/
           ],
         );
       }),
@@ -335,7 +365,7 @@ class OwnerContactCard extends StatelessWidget {
 
                 Expanded(
                   child: Text(
-                    apartment.contactPersonName ?? '-',
+                    dashIfEmpty(apartment.contactPersonName),
                     style: const TextStyle(
                       color: AppColors.textGrey,
                       fontSize: 18,
@@ -349,7 +379,11 @@ class OwnerContactCard extends StatelessWidget {
                 _ActionButton(
                   icon: Icons.call_rounded,
                   onTap: () {
-                    // Call action
+                    final phone = apartment.contactPersonPhone;
+
+                    if (phone != null && phone.isNotEmpty) {
+                      Helpers().makePhoneCall(phone);
+                    }
                   },
                 ),
 
@@ -358,7 +392,11 @@ class OwnerContactCard extends StatelessWidget {
                 _ActionButton(
                   icon: Icons.chat_bubble_rounded,
                   onTap: () {
-                    // Message action
+                    final phone = apartment.contactPersonPhone;
+
+                    if (phone != null && phone.isNotEmpty) {
+                      Helpers().sendSms(phone);
+                    }
                   },
                 ),
               ],
@@ -377,7 +415,8 @@ class OwnerContactCard extends StatelessWidget {
                 const SizedBox(width: 16),
 
                 Text(
-                  apartment.contactPersonPhone ?? '-',
+                  // apartment.contactPersonPhone ?? '-',
+                  dashIfEmpty(apartment.contactPersonPhone),
                   style: const TextStyle(
                     color: AppColors.textGrey,
                     fontSize: 16,
@@ -465,11 +504,107 @@ class PaymentInfoCard extends StatelessWidget {
       ],
     );
   }
+}
 
-  String dashIfEmpty(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return '-';
-    }
-    return value.trim();
+class LastUpdatedInfoCard extends StatelessWidget {
+  final String updatedBy;
+  final String updatedOn;
+
+  const LastUpdatedInfoCard({
+    super.key,
+    required this.updatedBy,
+    required this.updatedOn,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xffFFF8FB),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.red, width: 1),
+      ),
+      child: Row(
+        children: [
+          Container(
+            height: 44,
+            width: 44,
+            decoration: const BoxDecoration(
+              color: Color(0xffFFF0F0),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.person_add_alt_1_rounded,
+              color: AppColors.red,
+              size: 24,
+            ),
+          ),
+
+          const SizedBox(width: 12),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Last updated by:',
+                  style: TextStyle(
+                    color: AppColors.textGrey,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+
+                const SizedBox(height: 2),
+
+                Text(
+                  updatedBy,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.red,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+
+                const SizedBox(height: 6),
+
+                const Text(
+                  'Updated on:',
+                  style: TextStyle(
+                    color: AppColors.textGrey,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+
+                const SizedBox(height: 2),
+
+                Text(
+                  updatedOn,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.textGrey,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
+}
+
+String dashIfEmpty(String? value) {
+  if (value == null || value.trim().isEmpty) {
+    return '-';
+  }
+  return value.trim();
 }

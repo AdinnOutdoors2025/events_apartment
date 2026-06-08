@@ -1,8 +1,13 @@
+import 'package:apartment_project/screens/upload_screen.dart';
 import 'package:apartment_project/screens/upload_summary.dart';
+import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/app_colors.dart';
+import '../utils/snackbar.dart';
+import '../viewmodel/add_apartment_viewmodel.dart';
 import '../viewmodel/upload_viewmodel.dart';
 import 'add_apartment_screen.dart';
 
@@ -11,7 +16,6 @@ class UploadScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -22,10 +26,6 @@ class UploadScreen extends ConsumerWidget {
           scrolledUnderElevation: 0,
           surfaceTintColor: Colors.white,
           centerTitle: true,
-         /* leading: IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.arrow_back, color: Colors.black),
-          ),*/
           title: Text(
             "Apartments",
             style: TextStyle(color: AppColors.red, fontWeight: FontWeight.w500),
@@ -33,243 +33,29 @@ class UploadScreen extends ConsumerWidget {
         ),
         body: SafeArea(
           child: Column(
-            children: const [
-              _UploadTopTabs(),
+            children: [
+              const _UploadTopTabs(),
 
               Expanded(
                 child: TabBarView(
                   children: [
-                    AddApartmentScreen(showAppBar: false),
-                    _UploadFileTab(),
+                    ProviderScope(
+                      overrides: [
+                        apartmentFormProvider.overrideWith((ref) {
+                          return ApartmentFormNotifier(
+                            ref.read(apiServiceProvider),
+                          );
+                        }),
+                      ],
+                      child: const AddApartmentScreen(showAppBar: false),
+                    ),
+                    const _UploadFileTab(),
                   ],
                 ),
               ),
             ],
           ),
         ),
-        /*        body: RefreshIndicator(
-          onRefresh: () async {
-            await viewModel.getRecentUploads();
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 28,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(
-                      color: AppColors.red,
-                      width: 1,
-                      style: BorderStyle.solid,
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Image.network(
-                        'https://cdn-icons-png.flaticon.com/512/732/732220.png',
-                        height: 80,
-                      ),
-                      const SizedBox(height: 20),
-                      const Text(
-                        "Upload apartment\nExcel file",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        ".xlsx files up to 10MB",
-                        style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: 150,
-                        height: 55,
-                        child: ElevatedButton(
-                          onPressed: state.isLoading
-                              ? null
-                              : () async {
-                                  final file = await viewModel.pickExcelFile();
-                                  if (file != null && context.mounted) {
-                                    final response = await viewModel
-                                        .uploadExcel();
-                                    if (response != null &&
-                                        response.success == true &&
-                                        context.mounted) {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (_) => UploadSummary(
-                                            isNewUpload: true,
-                                            uploadData: response.data,
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                  }
-                                },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.red,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                          ),
-                          child: state.isLoading
-                              ? const CircularProgressIndicator(
-                                  color: Colors.white,
-                                )
-                              : const Text(
-                                  "Choose File",
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  "Recent Upload",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 14),
-                Expanded(
-                  child: Builder(
-                    builder: (context) {
-                      if (state.isRecentLoading) {
-                        return const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(30),
-                            child: CircularProgressIndicator(),
-                          ),
-                        );
-                      }
-
-                      if (state.recentUploads.isEmpty) {
-                        return const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(30),
-                            child: Text(
-                              "No Recent Uploads",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ),
-                        );
-                      }
-                      return ListView.builder(
-                        shrinkWrap: true,
-                        controller: viewModel.scrollController,
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        itemCount:
-                            state.recentUploads.length +
-                            (state.isPaginationLoading ? 1 : 0),
-                        itemBuilder: (context, index) {
-                          if (index == state.recentUploads.length) {
-                            return const Padding(
-                              padding: EdgeInsets.all(20),
-                              child: Center(child: CircularProgressIndicator()),
-                            );
-                          }
-                          final item = state.recentUploads[index];
-
-                          return GestureDetector(
-                            onTap: () async {
-                              final sessionId = item.sessionId ?? "";
-                              if (kDebugMode) {
-                                print("sessionID : $sessionId");
-                              }
-
-                              if (context.mounted) {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => UploadSummary(
-                                      isNewUpload: false,
-                                      sessionId: sessionId,
-                                    ),
-                                  ),
-                                );
-                              }
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(5),
-                              child: Container(
-                                padding: const EdgeInsets.all(14),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(18),
-                                  border: Border.all(
-                                    color: Colors.grey.shade200,
-                                    width: 1,
-                                    style: BorderStyle.solid,
-                                  ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Image.network(
-                                      'https://cdn-icons-png.flaticon.com/512/732/732220.png',
-                                      height: 40,
-                                    ),
-                                    const SizedBox(width: 14),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            item.fileName ?? "",
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w700,
-                                              fontSize: 14,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 6),
-                                          Text(
-                                            item.updatedAt ?? "",
-                                            style: TextStyle(
-                                              color: Colors.grey.shade600,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            "${item.totalRows ?? 0} rows",
-                                            style: TextStyle(
-                                              color: Colors.grey.shade700,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        )*/
       ),
     );
   }
@@ -328,46 +114,55 @@ class _UploadFileTab extends ConsumerWidget {
       onRefresh: () async {
         await viewModel.getRecentUploads();
       },
-      child: Padding(
-        padding: const EdgeInsets.only(top: 5, left: 15, right: 15, bottom: 5),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _UploadExcelCard(
-              isLoading: state.isLoading,
-              onChooseFile: () async {
-                final file = await viewModel.pickExcelFile();
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Padding(
+          padding: const EdgeInsets.only(left: 15, right: 15),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _DownloadTemplateCard(
+                onTap: () async {
+                  await viewModel.downloadExcelTemplate();
+                },
+              ),
 
-                if (file != null && context.mounted) {
-                  final response = await viewModel.uploadExcel();
+              const SizedBox(height: 10),
 
-                  if (response != null &&
-                      response.success == true &&
-                      context.mounted) {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => UploadSummary(
-                          isNewUpload: true,
-                          uploadData: response.data,
+              _UploadExcelCard(
+                isLoading: state.isLoading,
+                onChooseFile: () async {
+                  final file = await viewModel.pickExcelFile();
+
+                  if (file != null && context.mounted) {
+                    final response = await viewModel.uploadExcel();
+
+                    if (response != null &&
+                        response.success == true &&
+                        context.mounted) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => UploadSummary(
+                            isNewUpload: true,
+                            uploadData: response.data,
+                          ),
                         ),
-                      ),
-                    );
+                      );
+                    }
                   }
-                }
-              },
-            ),
+                },
+              ),
 
-            const SizedBox(height: 20),
+              const SizedBox(height: 15),
 
-            const Text(
-              "Recent Uploads",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-            ),
+              const Text(
+                "Recent Uploads",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+              ),
 
-            const SizedBox(height: 12),
+              const SizedBox(height: 10),
 
-            Expanded(
-              child: Builder(
+              Builder(
                 builder: (context) {
                   if (state.isRecentLoading) {
                     return const Center(child: CircularProgressIndicator());
@@ -375,7 +170,8 @@ class _UploadFileTab extends ConsumerWidget {
 
                   if (state.recentUploads.isEmpty) {
                     return ListView(
-                      physics: const AlwaysScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
                       children: const [
                         SizedBox(height: 80),
                         Center(
@@ -393,8 +189,8 @@ class _UploadFileTab extends ConsumerWidget {
                   }
 
                   return ListView.builder(
-                    controller: viewModel.scrollController,
-                    physics: const AlwaysScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
                     itemCount:
                         state.recentUploads.length +
                         (state.isPaginationLoading ? 1 : 0),
@@ -433,8 +229,117 @@ class _UploadFileTab extends ConsumerWidget {
                   );
                 },
               ),
-            ),
-          ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DownloadTemplateCard extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _DownloadTemplateCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(22),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(22),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: Colors.grey.shade800, width: 0.5),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.045),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                height: 40,
+                width: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.red.withOpacity(0.07),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Center(
+                  child: Image.network(
+                    'https://cdn-icons-png.flaticon.com/512/732/732220.png',
+                    height: 25,
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 14),
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Download Excel Template',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: AppColors.textGrey,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+
+                    SizedBox(height: 5),
+
+                    Text(
+                      'Use the sample format for easy bulk upload',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.grey.shade700,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        height: 1.25,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
+              Container(
+                height: 35,
+                width: 35,
+                decoration: BoxDecoration(
+                  color: AppColors.red,
+                  borderRadius: BorderRadius.circular(10),
+                  /*boxShadow: [
+                    BoxShadow(
+                      color: AppColors.red.withOpacity(0.25),
+                      blurRadius: 12,
+                      offset: Offset(0, 6),
+                    ),
+                  ],*/
+                ),
+                child: const Icon(
+                  Icons.file_download_outlined,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -449,92 +354,89 @@ class _UploadExcelCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(5),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 35),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: AppColors.red,
-            width: 1,
-            style: BorderStyle.solid,
-          ),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: AppColors.red,
+          width: 1,
+          style: BorderStyle.solid,
         ),
-        child: Column(
-          children: [
-            Image.network(
-              'https://cdn-icons-png.flaticon.com/512/732/732220.png',
-              height: 80,
+      ),
+      child: Column(
+        children: [
+          Image.network(
+            'https://cdn-icons-png.flaticon.com/512/732/732220.png',
+            height: 80,
+          ),
+
+          const SizedBox(height: 20),
+
+          const Text(
+            "Upload apartment\nExcel file",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              height: 1.35,
             ),
+          ),
 
-            const SizedBox(height: 20),
+          const SizedBox(height: 12),
 
-            const Text(
-              "Upload apartment\nExcel file",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                height: 1.35,
-              ),
+          Text(
+            ".xlsx file",
+            style: TextStyle(
+              color: Colors.grey.shade600,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
             ),
+          ),
 
-            const SizedBox(height: 12),
+          const SizedBox(height: 15),
 
-            Text(
-              ".xlsx files up to 10MB",
-              style: TextStyle(
-                color: Colors.grey.shade600,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-
-            const SizedBox(height: 22),
-
-            SizedBox(
-              width: 150,
-              height: 55,
-              child: ElevatedButton.icon(
-                onPressed: isLoading ? null : onChooseFile,
-                icon: isLoading
-                    ? const SizedBox.shrink()
-                    : const Icon(
-                        Icons.cloud_upload_outlined,
+          SizedBox(
+            width: 150,
+            height: 55,
+            child: ElevatedButton.icon(
+              onPressed: isLoading ? null : onChooseFile,
+              icon: isLoading
+                  ? const SizedBox.shrink()
+                  : const Icon(
+                      Icons.cloud_upload_outlined,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+              label: isLoading
+                  ? const SizedBox(
+                      height: 22,
+                      width: 22,
+                      child: CircularProgressIndicator(
                         color: Colors.white,
-                        size: 20,
+                        strokeWidth: 2.4,
                       ),
-                label: isLoading
-                    ? const SizedBox(
-                        height: 22,
-                        width: 22,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2.4,
-                        ),
-                      )
-                    : const Text(
-                        "Choose File",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                        ),
+                    )
+                  : const Text(
+                      "Choose File",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
                       ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.red,
-                  elevation: 3,
-                  shadowColor: AppColors.red.withOpacity(0.25),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
+                    ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.red,
+                elevation: 3,
+                shadowColor: AppColors.red.withOpacity(0.25),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

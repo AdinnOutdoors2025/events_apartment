@@ -1,5 +1,7 @@
+import 'package:apartment_project/utils/helpers.dart';
 import 'package:apartment_project/utils/snackbar.dart';
 import 'package:apartment_project/widgets/custom_button.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +9,8 @@ import '../model/get_list_model.dart';
 import '../theme/app_colors.dart';
 import '../utils/validators.dart';
 import '../viewmodel/add_apartment_viewmodel.dart';
+import '../viewmodel/apartment_viewmodel.dart';
+import 'apartment_details_screen.dart';
 
 class AddApartmentScreen extends ConsumerStatefulWidget {
   final Apartment? apartment;
@@ -22,8 +26,11 @@ class AddApartmentScreen extends ConsumerStatefulWidget {
 
 class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
   final _formKey = GlobalKey<FormState>();
+  final ScrollController _scrollController = ScrollController();
+  late final TextEditingController apartmentGroupController;
   late final TextEditingController apartmentNameController;
   late final TextEditingController contactPhoneController;
+  late final TextEditingController contactNameController;
   late final TextEditingController locationController;
   late final TextEditingController geoLocationController;
   late final TextEditingController accountHolderController;
@@ -38,13 +45,16 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
   late final TextEditingController toTGController;
   late final TextEditingController rentController;
   late final TextEditingController ratingController;
+  int _resetCounter = 0;
 
   @override
   void initState() {
     super.initState();
 
+    apartmentGroupController = TextEditingController();
     apartmentNameController = TextEditingController();
     contactPhoneController = TextEditingController();
+    contactNameController = TextEditingController();
     locationController = TextEditingController();
     geoLocationController = TextEditingController();
 
@@ -71,11 +81,12 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
 
         WidgetsBinding.instance.addPostFrameCallback((_) {
           ref.read(apartmentFormProvider.notifier).loadApartment(apartment);
-          print("API City : ${apartment.city}");
-          print("API State : ${apartment.state}");
+
+          apartmentGroupController.text = apartment.apartmentGroupName ?? '';
           apartmentNameController.text = apartment.apartmentName ?? '';
 
           contactPhoneController.text = apartment.contactPersonPhone ?? '';
+          contactNameController.text = apartment.contactPersonName ?? '';
 
           locationController.text = apartment.location ?? '';
 
@@ -100,11 +111,17 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
           approxPeopleController.text =
               apartment.approxPeopleCount?.toString() ?? '';
 
-          fromTGController.text = apartment.fromTGValues?.toString() ?? '';
+          fromTGController.text = apartment.fromTGValues != null
+              ? Helpers().numberFormatter.format(apartment.fromTGValues)
+              : '';
 
-          toTGController.text = apartment.toTGValues?.toString() ?? '';
+          toTGController.text = apartment.toTGValues != null
+              ? Helpers().numberFormatter.format(apartment.toTGValues)
+              : '';
 
-          rentController.text = apartment.perDayRent?.toString() ?? '';
+          rentController.text = apartment.perDayRent != null
+              ? Helpers().numberFormatter.format(apartment.perDayRent)
+              : '';
 
           ratingController.text = apartment.rating?.toString() ?? '';
         });
@@ -114,8 +131,11 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
 
   @override
   void dispose() {
-    apartmentNameController.dispose();
+    _scrollController.dispose();
+    apartmentGroupController.clear();
+    apartmentNameController.clear();
     contactPhoneController.dispose();
+    contactNameController.dispose();
     locationController.dispose();
     geoLocationController.dispose();
 
@@ -145,12 +165,7 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
     'Tirunelveli',
   ];
 
-  final List<String> states = const [
-    'Tamil Nadu',
-    'Kerala',
-    'Karnataka',
-    'Andhra Pradesh',
-  ];
+  final List<String> states = const ['TamilNadu'];
 
   @override
   Widget build(BuildContext context) {
@@ -186,6 +201,7 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
           children: [
             Expanded(
               child: SingleChildScrollView(
+                controller: _scrollController,
                 keyboardDismissBehavior:
                     ScrollViewKeyboardDismissBehavior.onDrag,
                 child: Form(
@@ -200,19 +216,27 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
                         ),
 
                         const SizedBox(height: 16),
-
+                        _AppTextField(
+                          label: 'Apartment Group Name',
+                          hint: 'Enter name',
+                          icon: Icons.apartment_rounded,
+                          //   validator: (value) => Validator.name(value,"Apartment "),
+                          onChanged: notifier.updateApartmentGroupName,
+                          controller: apartmentGroupController,
+                        ),
+                        const SizedBox(height: 10),
                         _AppTextField(
                           label: 'Apartment Name',
                           hint: 'Enter apartment name',
                           icon: Icons.apartment_rounded,
                           validator: (value) =>
-                              Validator.validate(value, "Apartment name"),
+                              Validator.name(value, "Apartment Name"),
                           onChanged: notifier.updateApartmentName,
                           controller: apartmentNameController,
                         ),
                         const SizedBox(height: 10),
                         _AppTextField(
-                          label: 'Contact Person Phone',
+                          label: 'Phone Number',
                           hint: 'Enter phone number',
                           icon: Icons.phone_outlined,
                           keyboardType: TextInputType.phone,
@@ -220,14 +244,26 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
                             FilteringTextInputFormatter.digitsOnly,
                             LengthLimitingTextInputFormatter(10),
                           ],
-                          validator: (value) =>
-                              Validator.validate(value, "phone number"),
+                          validator: Validator.phone,
                           onChanged: notifier.updateContactPhone,
                           controller: contactPhoneController,
                         ),
                         const SizedBox(height: 10),
+                        _AppTextField(
+                          label: 'Name',
+                          hint: 'Enter Name',
+                          icon: Icons.person,
+                          /*  validator: (value) =>
+                              Validator.validate(value, 'Name'),*/
+                          onChanged: notifier.updatePersonName,
+                          controller: contactNameController,
+                        ),
+                        const SizedBox(height: 10),
                         _TwoColumnRow(
                           left: _AppDropdownField(
+                            key: ValueKey(
+                              'state_${formState.state}_$_resetCounter',
+                            ),
                             label: 'State',
                             hint: 'Select state',
                             icon: Icons.map_outlined,
@@ -241,13 +277,16 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
                             value: formState.state,
                           ),
                           right: _AppDropdownField(
+                            key: ValueKey(
+                              'city_${formState.city}_$_resetCounter',
+                            ),
                             label: 'City',
                             hint: 'Select city',
                             icon: Icons.location_on_outlined,
                             items: cities,
                             hintText: 12,
                             validator: (value) =>
-                                Validator.validate(value, "Select city"),
+                                Validator.validate(value, "Select City"),
                             onChanged: (value) {
                               notifier.updateCity(value ?? '');
                             },
@@ -258,10 +297,10 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
                         const SizedBox(height: 10),
                         _AppTextField(
                           label: 'Location',
-                          hint: 'Enter location',
+                          hint: 'Anna Nagar',
                           icon: Icons.location_on_outlined,
                           validator: (value) =>
-                              Validator.validate(value, "location"),
+                              Validator.validate(value, "Location"),
                           onChanged: notifier.updateLocation,
                           controller: locationController,
                         ),
@@ -269,7 +308,7 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
                         const SizedBox(height: 10),
                         _AppTextField(
                           label: 'Geo Location',
-                          hint: 'Enter geo location',
+                          hint: ' https://www.google.com/maps/place',
                           icon: Icons.my_location_rounded,
                           onChanged: notifier.updateJioLocation,
                           controller: geoLocationController,
@@ -311,6 +350,7 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
                           keyboardType: TextInputType.number,
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(15),
                           ],
                           onChanged: notifier.updateAccountNumber,
                           controller: accountNumberController,
@@ -365,6 +405,7 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
                           icon: Icons.send_outlined,
                           onChanged: notifier.updateUpiId,
                           controller: upiController,
+                          validator: Validator.upi,
                         ),
 
                         const SizedBox(height: 22),
@@ -389,6 +430,7 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
                             ],
                             onChanged: notifier.updateResidencyCount,
                             controller: residencyController,
+                            validator: Validator.optionalPositiveNumber,
                           ),
                           right: _AppTextField(
                             label: 'Approx. People Count',
@@ -400,6 +442,7 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
                             ],
                             onChanged: notifier.updateApproxPeople,
                             controller: approxPeopleController,
+                            validator: Validator.optionalPositiveNumber,
                           ),
                         ),
 
@@ -411,18 +454,26 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
                             hint: 'Enter from TG value',
                             icon: Icons.sell_outlined,
                             onChanged: notifier.updateFromTG,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              IndianCurrencyInputFormatter(),
+                            ],
                             controller: fromTGController,
-                            validator: (value) =>
-                                Validator.validate(value, "fromTG values"),
+                            validator: Validator.optionalPositiveNumber,
                           ),
                           right: _AppTextField(
                             label: 'To TG Values',
                             hint: 'Enter to TG value',
                             icon: Icons.sell_outlined,
                             onChanged: notifier.updateToTG,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              IndianCurrencyInputFormatter(),
+                            ],
                             controller: toTGController,
-                            validator: (value) =>
-                                Validator.validate(value, "toTG values"),
+                            validator: Validator.optionalPositiveNumber,
                           ),
                         ),
 
@@ -435,27 +486,25 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
                           keyboardType: TextInputType.number,
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly,
+                            IndianCurrencyInputFormatter(),
                           ],
                           validator: (value) =>
-                              Validator.validate(value, "per day rent"),
+                              Validator.positiveNumber(value, "Per Day Rent"),
                           onChanged: notifier.updatePerDayRent,
                           controller: rentController,
                         ),
                         SizedBox(height: 10),
                         _AppTextField(
-                          label: 'Rating (1 to 5, .5 allowed)',
-                          hint: 'Enter rating',
+                          label: 'Rating',
+                          hint: 'Enter rating between 1 and 5 (e.g. 4.5)',
                           icon: Icons.star_border_rounded,
                           keyboardType: const TextInputType.numberWithOptions(
                             decimal: true,
                           ),
                           inputFormatters: [
-                            FilteringTextInputFormatter.allow(
-                              RegExp(r'^\d*\.?\d{0,1}'),
-                            ),
+                            FilteringTextInputFormatter.allow(RegExp(r'[1-5]')),
                           ],
-                          /* validator: (value) =>
-                              Validator.validate(value, "rating"),*/
+                          validator: Validator.rating,
                           onChanged: notifier.updateRating,
                           controller: ratingController,
                         ),
@@ -498,10 +547,14 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
                               }
                             }
                             try {
-                              await ref
+                              if (!widget.isEdit) {
+                                ref
+                                    .read(apartmentFormProvider.notifier)
+                                    .clearApartmentId();
+                              }
+                              final apartment = await ref
                                   .read(apartmentFormProvider.notifier)
-                                  .saveApartment();
-
+                                  .saveApartment(isEdit: widget.isEdit);
                               if (!mounted) return;
 
                               AppToast.showSuccess(
@@ -509,11 +562,28 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
                                     ? "Apartment updated successfully"
                                     : "Apartment added successfully",
                               );
+                              if (widget.isEdit) {
+                                Navigator.pop(context, true);
+                              } else {
+                                await ref
+                                    .read(
+                                      apartmentFamilyProvider(null).notifier,
+                                    )
+                                    .getApartments();
 
-                              Navigator.pop(context, true);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ApartmentDetailsScreen(
+                                      apartment: apartment,
+                                    ),
+                                  ),
+                                ).then((_) {
+                                  _clearAddApartmentForm();
+                                });
+                              }
                             } catch (e) {
                               if (!mounted) return;
-
                               AppToast.showError(e.toString());
                             }
                           },
@@ -531,36 +601,49 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
     );
   }
 
-  String? _ratingValidator(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Required';
+  void _clearAddApartmentForm() {
+    FocusScope.of(context).unfocus();
+    if (kDebugMode) {
+      print("clearing all controllers");
+      print("before clear: ${apartmentNameController.text}");
     }
 
-    final rating = double.tryParse(value);
+    _formKey.currentState?.reset();
+    ref.read(apartmentFormProvider.notifier).resetForm();
+    apartmentGroupController.clear();
+    apartmentNameController.clear();
+    contactPhoneController.clear();
+    contactNameController.clear();
+    locationController.clear();
+    geoLocationController.clear();
 
-    if (rating == null) {
-      return 'Invalid rating';
-    }
+    accountHolderController.clear();
+    bankNameController.clear();
+    accountNumberController.clear();
+    ifscController.clear();
+    phoneController.clear();
+    upiController.clear();
 
-    if (rating < 1 || rating > 5) {
-      return '1 to 5 only';
-    }
+    residencyController.clear();
+    approxPeopleController.clear();
+    fromTGController.clear();
+    toTGController.clear();
+    rentController.clear();
+    ratingController.clear();
+    setState(() {
+      _resetCounter++;
+    });
 
-    if ((rating * 10) % 5 != 0) {
-      return '.5 allowed only';
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(0);
+      }
 
-    return null;
+      if (kDebugMode) {
+        print("after clear: ${apartmentNameController.text}");
+      }
+    });
   }
-}
-
-class AppColor {
-  static const Color primaryRed = Color(0xffEF1B1B);
-  static const Color border = Color(0xffD6DAE1);
-  static const Color hint = Color(0xff7B8190);
-  static const Color text = Color(0xff111111);
-  static const Color icon = Color(0xff5F6673);
-  static const Color lightRed = Color(0xffFFECEC);
 }
 
 class _SectionTitle extends StatelessWidget {
@@ -576,7 +659,7 @@ class _SectionTitle extends StatelessWidget {
         Text(
           title,
           style: const TextStyle(
-            color: AppColor.primaryRed,
+            color: AppColors.red,
             fontSize: 18,
             fontWeight: FontWeight.w800,
           ),
@@ -642,8 +725,8 @@ class _AppTextField extends StatelessWidget {
         keyboardType: keyboardType,
         inputFormatters: inputFormatters,
         textCapitalization: textCapitalization,
-        style: const TextStyle(
-          color: AppColor.text,
+        style: TextStyle(
+          color: AppColors.textGrey,
           fontSize: 14,
           fontWeight: FontWeight.w500,
         ),
@@ -669,6 +752,7 @@ class _AppDropdownField extends StatelessWidget {
   final String? Function(String?)? validator;
 
   const _AppDropdownField({
+    super.key,
     required this.label,
     required this.hint,
     this.hintText,
@@ -681,17 +765,21 @@ class _AppDropdownField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final selectedValue =
+        value != null && value!.trim().isNotEmpty && items.contains(value)
+        ? value
+        : null;
+
     return _FieldLabelWrapper(
       label: label,
       child: DropdownButtonFormField<String>(
-        value: (value != null && value!.isNotEmpty && items.contains(value))
-            ? value
-            : null,
+        key: ValueKey('${label}_${selectedValue ?? ""}'),
+        value: selectedValue,
         hint: Text(
           hint,
           style: TextStyle(
             fontSize: hintText ?? 14,
-            color: AppColor.hint,
+            color: AppColors.textGrey,
             fontWeight: FontWeight.w400,
           ),
         ),
@@ -699,7 +787,7 @@ class _AppDropdownField extends StatelessWidget {
         isExpanded: true,
         icon: const Icon(
           Icons.keyboard_arrow_down_rounded,
-          color: AppColor.icon,
+          color: AppColors.textGrey,
         ),
         decoration: _inputDecoration(
           hint: hint,
@@ -738,7 +826,7 @@ class _FieldLabelWrapper extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
-            color: AppColor.text,
+            color: AppColors.textGrey,
             fontSize: 13,
             fontWeight: FontWeight.w700,
           ),
@@ -759,34 +847,34 @@ InputDecoration _inputDecoration({
   return InputDecoration(
     hintText: hint,
     hintStyle: TextStyle(
-      color: AppColor.hint,
+      color: Colors.grey.shade500,
       fontSize: hintText,
       fontWeight: FontWeight.w400,
     ),
-    prefixIcon: Icon(icon, size: 21, color: AppColor.icon),
+    prefixIcon: Icon(icon, size: 21, color: AppColors.textGrey),
     suffixIcon: suffix,
     filled: true,
     fillColor: Colors.white,
     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(9),
-      borderSide: const BorderSide(color: AppColor.border),
+      borderSide: const BorderSide(color: AppColors.textGrey),
     ),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(9),
-      borderSide: const BorderSide(color: AppColor.border),
+      borderSide: const BorderSide(color: AppColors.textGrey),
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(9),
-      borderSide: const BorderSide(color: AppColor.primaryRed, width: 1.2),
+      borderSide: const BorderSide(color: AppColors.red, width: 1.2),
     ),
     errorBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(9),
-      borderSide: const BorderSide(color: AppColor.primaryRed),
+      borderSide: const BorderSide(color: AppColors.red),
     ),
     focusedErrorBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(9),
-      borderSide: const BorderSide(color: AppColor.primaryRed),
+      borderSide: const BorderSide(color: AppColors.red),
     ),
   );
 }

@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'add_apartment_viewmodel.dart';
 import 'apartment_viewmodel.dart';
+import 'order_viewmodel.dart';
 import 'upload_viewmodel.dart';
 
 class BottomNavState {
@@ -31,13 +33,17 @@ class BottomNavNotifier extends AutoDisposeNotifier<BottomNavState> {
 
     state = state.copyWith(currentIndex: index, tabHistory: updatedHistory);
 
-    if (index == 1) {
+    /* if (index == 1) {
       ref.read(apartmentFamilyProvider(null).notifier).clearSessionFilter();
       await ref.read(apartmentFamilyProvider(null).notifier).getApartments();
     }
-    if (index == 3) {
-      await ref.read(uploadViewModelProvider.notifier).getRecentUploads();
+    if (index == 2) {
+      await ref.read(orderViewModelProvider.notifier).refreshOrders();
     }
+    if (index == 3) {
+      ref.read(apartmentFormProvider.notifier).resetForm();
+      await ref.read(uploadViewModelProvider.notifier).getRecentUploads();
+    }*/
   }
 
   bool handleBack() {
@@ -64,47 +70,8 @@ class BottomNavNotifier extends AutoDisposeNotifier<BottomNavState> {
     }
   }
 }
-/*
-class BottomNavNotifier extends Notifier<BottomNavState> {
-  @override
-  BottomNavState build() {
-    return BottomNavState(currentIndex: 0, tabHistory: [0]);
-  }
-
-  void changeIndex(int index) {
-    if (state.currentIndex == index) return;
-
-    final updatedHistory = List<int>.from(state.tabHistory);
-
-    updatedHistory.remove(index);
-    updatedHistory.add(index);
-
-    state = state.copyWith(currentIndex: index, tabHistory: updatedHistory);
-  }
-
-  bool handleBack() {
-    if (state.tabHistory.length > 1) {
-      final updatedHistory = List<int>.from(state.tabHistory);
-
-      updatedHistory.removeLast();
-
-      state = state.copyWith(
-        currentIndex: updatedHistory.last,
-        tabHistory: updatedHistory,
-      );
-
-      return false;
-    }
-
-    return true;
-  }
-}
-*/
 
 final bottomNavProvider =
     NotifierProvider.autoDispose<BottomNavNotifier, BottomNavState>(
       BottomNavNotifier.new,
     );
-/*final bottomNavProvider = NotifierProvider<BottomNavNotifier, BottomNavState>(
-  BottomNavNotifier.new,
-);*/

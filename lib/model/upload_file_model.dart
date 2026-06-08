@@ -128,23 +128,3 @@ class Summary {
     "totalSkipped": totalSkipped,
   };
 }
-
-/*
-class UploadSummaryData {
-  String? fileName;
-  int? totalRows;
-  int? insertedCount;
-  int? updatedCount;
-  int? skippedCount;
-  String? uploadedAt;
-
-  UploadSummaryData({
-    this.fileName,
-    this.totalRows,
-    this.insertedCount,
-    this.updatedCount,
-    this.skippedCount,
-    this.uploadedAt,
-  });
-}
-*/

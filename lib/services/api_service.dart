@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import '../constants/api_constants.dart';
+import '../model/apartment_update_model.dart';
 import '../model/get_list_model.dart';
 import '../model/order_history_model.dart';
 import '../model/recent_upload_model.dart';
@@ -90,21 +91,28 @@ class ApiService {
   }
 
   Future<GetListModel> getApartmentSummary({
-    required int pageNumber,
-    required int count,
+    int? pageNumber,
+    int? count,
     String? sessionId,
     String? search,
     String? location,
     String? city,
+    String? apartmentGroupName,
     int? minRent,
     int? maxRent,
     int? minTG,
     int? maxTG,
   }) async {
     try {
-      Map<String, dynamic> body = {"pageNumber": pageNumber, "count": count};
+      // Map<String, dynamic> body = {"pageNumber": pageNumber, "count": count};
+      final body = <String, dynamic>{};
+      if (pageNumber != null) {
+        body["pageNumber"] = pageNumber;
+      }
 
-      // Optional params
+      if (count != null) {
+        body["count"] = count;
+      }
       if (sessionId != null && sessionId.isNotEmpty) {
         body["sessionId"] = sessionId;
       }
@@ -114,10 +122,13 @@ class ApiService {
       }
 
       if (location != null && location.isNotEmpty) {
-        body["location"] = location;
+        body["Location"] = location;
       }
       if (city != null && city.isNotEmpty) {
-        body["city"] = city;
+        body["City"] = city;
+      }
+      if (apartmentGroupName != null && apartmentGroupName.isNotEmpty) {
+        body["ApartmentGroupName"] = apartmentGroupName;
       }
 
       if (minRent != null) {
@@ -243,19 +254,14 @@ class ApiService {
     }
   }
 
-  Future<void> saveApartment({
-    required Map<String, dynamic> body,
-  }) async {
+  Future<Apartment> saveApartment({required Map<String, dynamic> body}) async {
     try {
-      await dio.post(
+      final response = await dio.post(
         ApiConstants.apartmentAdd,
         data: body,
-        options: Options(
-          headers: {
-            "isRequireAuth": true,
-          },
-        ),
+        options: Options(headers: {"isRequireAuth": true}),
       );
+      return Apartment.fromJson(response.data["data"]);
     } on DioException catch (e) {
       throw handleError(e);
     } catch (e) {

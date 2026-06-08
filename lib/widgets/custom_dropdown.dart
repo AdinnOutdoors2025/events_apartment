@@ -46,8 +46,8 @@ class CustomDropdown extends StatelessWidget {
             toggleDropdown(dropdownKey);
           },
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
-            height: 56,
+            duration: const Duration(milliseconds: 100),
+            height: 45,
             padding: const EdgeInsets.symmetric(horizontal: 14),
             decoration: BoxDecoration(
               color: Colors.white,
