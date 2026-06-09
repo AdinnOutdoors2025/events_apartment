@@ -14,240 +14,246 @@ class ApartmentScreenContent extends ConsumerWidget {
   final ApartmentState state;
   final ApartmentViewModel viewModel;
   final String? sessionId;
+  final String? filename;
 
   const ApartmentScreenContent({
     super.key,
     required this.state,
     required this.viewModel,
     this.sessionId,
+    this.filename,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isSearching = viewModel.searchController.text.trim().isNotEmpty;
     final resultCount = state.apartments.length;
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
+    final totalCount = state.apartmentData?.totalCount ?? resultCount;
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
+      child: Scaffold(
         backgroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        surfaceTintColor: Colors.white,
-        centerTitle: true,
-        title: const Text(
-          'Apartment Rate Card',
-          style: TextStyle(
-            color: AppColors.red,
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          surfaceTintColor: Colors.white,
+          centerTitle: true,
+          title: const Text(
+            'Apartment Rate Card',
+            style: TextStyle(
+              color: AppColors.red,
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 6),
-            child: SizedBox(
-              width: 48,
-              height: 48,
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      showModalBottomSheet(
-                        context: context,
-                        useRootNavigator: true,
-                        isScrollControlled: true,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(
-                            top: Radius.circular(20),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 6),
+              child: SizedBox(
+                width: 48,
+                height: 48,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        FocusScope.of(context).unfocus();
+                        showModalBottomSheet(
+                          context: context,
+                          useRootNavigator: true,
+                          isScrollControlled: true,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(20),
+                            ),
                           ),
-                        ),
-                        builder: (_) => FilterBottomSheet(sessionId: sessionId),
-                      );
-                    },
-                    icon: const Icon(
-                      Icons.filter_alt_outlined,
-                      color: Colors.black,
-                      size: 25,
+                          builder: (_) =>
+                              FilterBottomSheet(sessionId: sessionId),
+                        );
+                      },
+                      icon: const Icon(
+                        Icons.filter_alt_outlined,
+                        color: Colors.black,
+                        size: 25,
+                      ),
                     ),
-                  ),
-                  if (viewModel.appliedFilterCount > 0)
-                    Positioned(
-                      right: 2,
-                      top: -2,
-                      child: Container(
-                        padding: const EdgeInsets.all(5),
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 20,
-                          minHeight: 20,
-                        ),
-                        child: Center(
-                          child: Text(
-                            viewModel.appliedFilterCount.toString(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
+                    if (viewModel.appliedFilterCount > 0)
+                      Positioned(
+                        right: 2,
+                        top: -2,
+                        child: Container(
+                          padding: const EdgeInsets.all(5),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 20,
+                            minHeight: 20,
+                          ),
+                          child: Center(
+                            child: Text(
+                              viewModel.appliedFilterCount.toString(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(18, 8, 18, 0),
-        child: Column(
-          children: [
-            _SearchBox(viewModel: viewModel),
-
-            const SizedBox(height: 14),
-            if (viewModel.appliedFilterCount > 0)
-              AppliedFilterChips(state: state, viewModel: viewModel),
-
-            if (viewModel.appliedFilterCount > 0) const SizedBox(height: 5),
-            const SizedBox(height: 1),
-            /*if (!state.isLoading && state.apartments.isNotEmpty)
-              Align(
-                alignment: Alignment.centerLeft,
-                child: */
-            /*Text(
-                "Showing ${state.apartments.length} of ${state.apartmentData?.totalCount ?? 0} apartments",
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey,
-                ),
-              ),*/
-            if (!state.isLoading && resultCount > 0)
-              Padding(
-                padding: const EdgeInsets.only(top: 2, bottom: 2),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    isSearching
-                        ? "$resultCount result${resultCount == 1 ? '' : 's'} found"
-                        : "Showing ${state.apartmentData?.totalCount ?? resultCount} apartments",
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ),
-              ),
-
-            const SizedBox(height: 10),
-            if (viewModel.isSessionBasedData && state.apartments.isNotEmpty)
-              Container(
-                margin: const EdgeInsets.only(bottom: 14),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.red.withOpacity(.08),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.red.withOpacity(.25)),
-                ),
-                child: Row(
-                  children: [
-                    const Expanded(
-                      child: Text(
-                        "Showing uploaded excel data only",
-                        style: TextStyle(
-                          color: AppColors.red,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () async {
-                        await viewModel.removeSessionFilter();
-                      },
-                      child: const Icon(
-                        Icons.close,
-                        size: 20,
-                        color: AppColors.red,
-                      ),
-                    ),
                   ],
                 ),
               ),
-            Expanded(
-              child: Builder(
-                builder: (context) {
-                  final items = state.apartments;
-
-                  if (state.isLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  if (items.isEmpty) {
-                    return const Center(child: Text("No apartments found"));
-                  }
-
-                  return RefreshIndicator(
-                    onRefresh: () async {
-                      await viewModel.refreshApartments();
-                    },
-                    child: ListView.separated(
-                      controller: viewModel.scrollController,
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      itemCount:
-                          items.length + (state.isPaginationLoading ? 1 : 0),
-                      separatorBuilder: (_, __) => const SizedBox(height: 14),
-                      itemBuilder: (context, index) {
-                        if (index == items.length) {
-                          return const Padding(
-                            padding: EdgeInsets.all(20),
-                            child: Center(child: CircularProgressIndicator()),
-                          );
-                        }
-
-                        return GestureDetector(
-                          onTap: () async {
-                            /* Navigator.of(
-                              context,
-                              rootNavigator: true,
-                            ).pushNamed(
-                              '/apartmentDetails',
-                              arguments: items[index],
-                            );*/
-
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) {
-                                  return ApartmentDetailsScreen(
-                                    apartment: items[index],
-                                  );
-                                },
-                              ),
-                            );
-                          },
-                          child: ApartmentRateCard(
-                            apartment: items[index],
-                            viewModel: viewModel,
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                },
-              ),
             ),
           ],
+        ),
+        body: Padding(
+          padding: const EdgeInsets.fromLTRB(18, 8, 18, 0),
+          child: Column(
+            children: [
+              _SearchBox(viewModel: viewModel),
+
+              const SizedBox(height: 14),
+              if (viewModel.appliedFilterCount > 0)
+                AppliedFilterChips(state: state, viewModel: viewModel),
+
+              if (viewModel.appliedFilterCount > 0) const SizedBox(height: 15),
+              const SizedBox(height: 1),
+              if (!state.isLoading && resultCount > 0)
+                Padding(
+                  padding: const EdgeInsets.only(top: 2, bottom: 2),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      isSearching
+                          ? 'Showing $totalCount matching Apartment${totalCount == 1 ? '' : 's'} for "${viewModel.searchController.text.trim()}"'
+                          : 'Showing $totalCount Apartments',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                ),
+
+              const SizedBox(height: 12),
+              if (viewModel.isSessionBasedData && state.apartments.isNotEmpty)
+                Container(
+                  margin: const EdgeInsets.only(bottom: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.red.withOpacity(.08),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppColors.red.withOpacity(.25)),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: /*Text(
+                          "Showing uploaded excel data only",
+                          style: TextStyle(
+                            color: AppColors.red,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),*/ Text(
+                          "Showing uploaded $filename data only",
+                          style: const TextStyle(
+                            color: AppColors.red,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () async {
+                          await viewModel.removeSessionFilter();
+                        },
+                        child: const Icon(
+                          Icons.close,
+                          size: 20,
+                          color: AppColors.red,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              Expanded(
+                child: Builder(
+                  builder: (context) {
+                    final items = state.apartments;
+
+                    if (state.isLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (items.isEmpty) {
+                      return const Center(child: Text("No Apartments found"));
+                    }
+
+                    return RefreshIndicator(
+                      onRefresh: () async {
+                        await viewModel.refreshApartments();
+                      },
+                      child: ListView.separated(
+                        controller: viewModel.scrollController,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount:
+                            items.length + (state.isPaginationLoading ? 1 : 0),
+                        separatorBuilder: (_, __) => const SizedBox(height: 14),
+                        itemBuilder: (context, index) {
+                          if (index == items.length) {
+                            return const Padding(
+                              padding: EdgeInsets.all(20),
+                              child: Center(child: CircularProgressIndicator()),
+                            );
+                          }
+
+                          return GestureDetector(
+                            onTap: () async {
+                              /* Navigator.of(
+                                context,
+                                rootNavigator: true,
+                              ).pushNamed(
+                                '/apartmentDetails',
+                                arguments: items[index],
+                              );*/
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) {
+                                    return ApartmentDetailsScreen(
+                                      apartment: items[index],
+                                    );
+                                  },
+                                ),
+                              );
+                            },
+                            child: ApartmentRateCard(
+                              apartment: items[index],
+                              viewModel: viewModel,
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -337,7 +343,7 @@ class FilterBottomSheet extends ConsumerWidget {
 
                     CustomDropdown(
                       title: 'City',
-                      hint: 'Select city',
+                      hint: 'Select City',
                       value: state.selectedCity,
                       items: state.cities,
                       onChanged: viewModel.setSelectedCity,
@@ -350,7 +356,7 @@ class FilterBottomSheet extends ConsumerWidget {
 
                     CustomDropdown(
                       title: 'Location',
-                      hint: 'Select location',
+                      hint: 'Select Location',
                       value: state.selectedLocation,
                       items: state.locations,
                       onChanged: viewModel.setSelectedLocation,
@@ -404,7 +410,7 @@ class FilterBottomSheet extends ConsumerWidget {
                             range.end.round() != state.maxTG.round();
 
                         return RangeFilterTile(
-                          title: 'TG Value Range',
+                          title: 'TG Value Range (₹ / Day)',
                           values: range,
                           min: state.minTG,
                           max: state.maxTG,
@@ -655,7 +661,7 @@ class _SearchBox extends StatelessWidget {
           fontWeight: FontWeight.w600,
         ),
         decoration: InputDecoration(
-          hintText: 'Search apartments...',
+          hintText: 'Search Apartments...',
           hintStyle: const TextStyle(
             color: Color(0xFF8A8FA3),
             fontSize: 14,
@@ -666,14 +672,29 @@ class _SearchBox extends StatelessWidget {
             color: Color(0xFF7C8196),
             size: 23,
           ),
-          suffixIcon: viewModel.searchController.text.isNotEmpty
+          /*suffixIcon: viewModel.searchController.text.isNotEmpty
               ? IconButton(
                   icon: Icon(Icons.close),
                   onPressed: () {
                     viewModel.clearSearch();
                   },
                 )
-              : null,
+              : null,*/
+          suffixIcon: ValueListenableBuilder(
+            valueListenable: viewModel.searchController,
+            builder: (_, value, __) {
+              if (value.text.isEmpty) {
+                return const SizedBox.shrink();
+              }
+
+              return IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () {
+                  viewModel.clearSearch();
+                },
+              );
+            },
+          ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,

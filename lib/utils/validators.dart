@@ -8,11 +8,11 @@ class Validator {
 
   static String? phone(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return "Phone number is required";
+      return "Phone Number is required";
     }
 
     if (!RegExp(r'^[0-9]{10}$').hasMatch(value!.trim())) {
-      return "Enter valid 10 digit phone number";
+      return "Enter valid 10 digit Phone Number";
     }
 
     return null;
@@ -20,7 +20,7 @@ class Validator {
 
   static String? accountNumber(String? value) {
     if (!RegExp(r'^[0-9]{9,18}$').hasMatch(value!.trim())) {
-      return "Enter valid account number";
+      return "Enter Valid Account Number";
     }
 
     return null;
@@ -30,7 +30,7 @@ class Validator {
     if (!RegExp(
       r'^[A-Z]{4}0[A-Z0-9]{6}$',
     ).hasMatch(value!.trim().toUpperCase())) {
-      return "Enter valid IFSC code";
+      return "Enter Valid IFSC Code";
     }
 
     return null;
@@ -42,7 +42,7 @@ class Validator {
     }
 
     if (!RegExp(r'^[a-zA-Z0-9.\-_]{2,}@[a-zA-Z]{2,}$').hasMatch(value.trim())) {
-      return "Enter valid UPI ID";
+      return "Enter Valid UPI ID";
     }
 
     return null;
@@ -50,7 +50,7 @@ class Validator {
 
   static String? positiveNumber(String? value, String fieldName) {
     if (value == null || value.trim().isEmpty) {
-      return "$fieldName is required";
+      return "$fieldName is Required";
     }
 
     final cleanedValue = value.replaceAll(',', '');
@@ -58,7 +58,7 @@ class Validator {
     final numValue = int.tryParse(cleanedValue);
 
     if (numValue == null || numValue < 0) {
-      return "Enter valid $fieldName";
+      return "Enter Valid $fieldName";
     }
 
     return null;
@@ -74,7 +74,7 @@ class Validator {
     final numValue = int.tryParse(cleanedValue);
 
     if (numValue == null || numValue < 0) {
-      return "Enter a valid number";
+      return "Enter a Valid Number";
     }
 
     return null;
@@ -88,7 +88,7 @@ class Validator {
     final rating = double.tryParse(value);
 
     if (rating == null) {
-      return "Invalid rating";
+      return "Invalid Rating";
     }
 
     if (rating < 1 || rating > 5) {
@@ -100,11 +100,11 @@ class Validator {
 
   static String? name(String? value, String fieldName) {
     if (value == null || value.trim().isEmpty) {
-      return "$fieldName is required";
+      return "$fieldName is Required";
     }
 
     if (!RegExp(r'^[a-zA-Z0-9 .&()-]+$').hasMatch(value.trim())) {
-      return "Enter valid $fieldName";
+      return "Enter Valid $fieldName";
     }
 
     return null;
@@ -112,7 +112,7 @@ class Validator {
 
   static String? bankName(String? value) {
     if (!RegExp(r'^[a-zA-Z.& ]+$').hasMatch(value!.trim())) {
-      return "Enter valid bank name";
+      return "Enter Valid Bank Name";
     }
 
     return null;

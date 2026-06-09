@@ -95,7 +95,7 @@ class _UploadTopTabs extends StatelessWidget {
         ),
         tabs: [
           Tab(text: 'Add Apartment'),
-          Tab(text: 'Upload file'),
+          Tab(text: 'Bulk Upload'),
         ],
       ),
     );
@@ -145,6 +145,7 @@ class _UploadFileTab extends ConsumerWidget {
                           builder: (_) => UploadSummary(
                             isNewUpload: true,
                             uploadData: response.data,
+                            fileName: ref.read(uploadViewModelProvider).fileName ?? "",
                           ),
                         ),
                       );
@@ -219,7 +220,7 @@ class _UploadFileTab extends ConsumerWidget {
                             MaterialPageRoute(
                               builder: (_) => UploadSummary(
                                 isNewUpload: false,
-                                sessionId: sessionId,
+                                sessionId: sessionId, fileName: ref.read(uploadViewModelProvider).fileName ?? "",
                               ),
                             ),
                           );
@@ -388,7 +389,7 @@ class _UploadExcelCard extends StatelessWidget {
           const SizedBox(height: 12),
 
           Text(
-            ".xlsx file",
+            ".xlsx file upto 5MB",
             style: TextStyle(
               color: Colors.grey.shade600,
               fontSize: 14,

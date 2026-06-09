@@ -218,7 +218,7 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
                         const SizedBox(height: 16),
                         _AppTextField(
                           label: 'Apartment Group Name',
-                          hint: 'Enter name',
+                          hint: 'Enter Name',
                           icon: Icons.apartment_rounded,
                           //   validator: (value) => Validator.name(value,"Apartment "),
                           onChanged: notifier.updateApartmentGroupName,
@@ -227,7 +227,7 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
                         const SizedBox(height: 10),
                         _AppTextField(
                           label: 'Apartment Name',
-                          hint: 'Enter apartment name',
+                          hint: 'Enter apartment Name',
                           icon: Icons.apartment_rounded,
                           validator: (value) =>
                               Validator.name(value, "Apartment Name"),
@@ -237,7 +237,7 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
                         const SizedBox(height: 10),
                         _AppTextField(
                           label: 'Phone Number',
-                          hint: 'Enter phone number',
+                          hint: 'Enter Phone Number',
                           icon: Icons.phone_outlined,
                           keyboardType: TextInputType.phone,
                           inputFormatters: [
@@ -265,12 +265,12 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
                               'state_${formState.state}_$_resetCounter',
                             ),
                             label: 'State',
-                            hint: 'Select state',
+                            hint: 'Select State',
                             icon: Icons.map_outlined,
                             items: states,
                             hintText: 12,
                             validator: (value) =>
-                                Validator.validate(value, "Select state"),
+                                Validator.validate(value, "Select State"),
                             onChanged: (value) {
                               notifier.updateStateName(value ?? '');
                             },
@@ -281,7 +281,7 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
                               'city_${formState.city}_$_resetCounter',
                             ),
                             label: 'City',
-                            hint: 'Select city',
+                            hint: 'Select City',
                             icon: Icons.location_on_outlined,
                             items: cities,
                             hintText: 12,
@@ -327,7 +327,7 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
 
                         _AppTextField(
                           label: 'Account Holder Name',
-                          hint: 'Enter account holder name',
+                          hint: 'Enter Account Holder Name',
                           icon: Icons.person_outline_rounded,
                           onChanged: notifier.updateAccountHolder,
                           controller: accountHolderController,
@@ -335,7 +335,7 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
                         const SizedBox(height: 12),
                         _AppTextField(
                           label: 'Bank Name',
-                          hint: 'Enter bank name',
+                          hint: 'Enter Bank Name',
                           icon: Icons.account_balance_outlined,
                           onChanged: notifier.updateBankName,
                           controller: bankNameController,
@@ -345,7 +345,7 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
 
                         _AppTextField(
                           label: 'Account Number',
-                          hint: 'Enter account number',
+                          hint: 'Enter Account Number',
                           icon: Icons.credit_card_rounded,
                           keyboardType: TextInputType.number,
                           inputFormatters: [
@@ -358,7 +358,7 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
                         const SizedBox(height: 14),
                         _AppTextField(
                           label: 'IFSC Code',
-                          hint: 'Enter IFSC code',
+                          hint: 'Enter IFSC Code',
                           icon: Icons.verified_user_outlined,
                           textCapitalization: TextCapitalization.characters,
                           onChanged: notifier.updateIfscCode,
@@ -369,7 +369,7 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
 
                         _AppTextField(
                           label: 'Phone Number',
-                          hint: 'Enter phone number',
+                          hint: 'Enter Phone Number',
                           icon: Icons.phone_outlined,
                           keyboardType: TextInputType.phone,
                           inputFormatters: [
@@ -422,7 +422,7 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
                         _TwoColumnRow(
                           left: _AppTextField(
                             label: 'Residency Count',
-                            hint: 'Enter residency count',
+                            hint: 'Enter Residency Count',
                             icon: Icons.groups_outlined,
                             keyboardType: TextInputType.number,
                             inputFormatters: [
@@ -433,8 +433,8 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
                             validator: Validator.optionalPositiveNumber,
                           ),
                           right: _AppTextField(
-                            label: 'Approx. People Count',
-                            hint: 'Enter approx. people count',
+                            label: 'Approx People Count',
+                            hint: 'Enter Approx People Count',
                             icon: Icons.diversity_3_outlined,
                             keyboardType: TextInputType.number,
                             inputFormatters: [
@@ -481,7 +481,7 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
 
                         _AppTextField(
                           label: 'Per Day Rent',
-                          hint: 'Enter per day rent',
+                          hint: 'Enter Per day Rent',
                           icon: Icons.currency_rupee_rounded,
                           keyboardType: TextInputType.number,
                           inputFormatters: [

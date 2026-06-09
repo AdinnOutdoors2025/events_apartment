@@ -160,18 +160,52 @@ class ApartmentViewModel
     });
 
     scrollController.addListener(() {
-      if (_currentSearch.isNotEmpty) {
-        return;
+      if (kDebugMode) {
+        print(
+          "pixels=${scrollController.position.pixels}"
+          " max=${scrollController.position.maxScrollExtent}"
+          " extentAfter=${scrollController.position.extentAfter}"
+          " page=${state.page}"
+          " totalPages=${state.totalPages}"
+          " loading=${state.isPaginationLoading}",
+        );
       }
-
       if (scrollController.position.pixels >=
               scrollController.position.maxScrollExtent - 200 &&
           !state.isPaginationLoading &&
           state.page < state.totalPages) {
-        getApartments(isLoadMore: true);
+        getApartments(
+          isLoadMore: true,
+
+          search: _currentSearch.isNotEmpty ? _currentSearch : null,
+          isSearch: _currentSearch.isNotEmpty,
+
+          location: state.appliedLocation,
+          city: state.appliedCity,
+          apartmentGroupName: state.appliedGroupedName,
+
+          minRent:
+              state.appliedCampaignRange.start.round() !=
+                  state.minCampaignRent.round()
+              ? state.appliedCampaignRange.start.round()
+              : null,
+
+          maxRent:
+              state.appliedCampaignRange.end.round() !=
+                  state.maxCampaignRent.round()
+              ? state.appliedCampaignRange.end.round()
+              : null,
+
+          minTG: state.appliedTGRange.start.round() != state.minTG.round()
+              ? state.appliedTGRange.start.round()
+              : null,
+
+          maxTG: state.appliedTGRange.end.round() != state.maxTG.round()
+              ? state.appliedTGRange.end.round()
+              : null,
+        );
       }
     });
-
     return ApartmentState(currentSessionId: arg);
   }
 
@@ -179,6 +213,7 @@ class ApartmentViewModel
     return state.currentSessionId?.isNotEmpty ?? false;
   }
 
+  /*
   void searchApartments(String query) {
     print("Searching in ${state.allApartments.length} apartments");
 
@@ -221,13 +256,41 @@ class ApartmentViewModel
       getApartments(search: query, isSearch: true);
     });
   }
+*/
 
-  Future<void> clearSearch() async {
+  void searchApartments(String query) {
+    _searchDebounce?.cancel();
+
+    _currentSearch = query.trim();
+
+    _searchDebounce = Timer(const Duration(milliseconds: 500), () {
+      getApartments(
+        search: _currentSearch.isEmpty ? null : _currentSearch,
+        isSearch: _currentSearch.isNotEmpty,
+        isLoadMore: false,
+      );
+    });
+  }
+
+  /*Future<void> clearSearch() async {
+    _searchDebounce?.cancel();
     _currentSearch = '';
 
     searchController.clear();
 
-    state = state.copyWith(apartments: List.from(state.allApartments));
+   // state = state.copyWith(apartments: List.from(state.allApartments));
+    await getApartments(
+      search: null,
+      isSearch: true,
+    );
+  }*/
+  Future<void> clearSearch() async {
+    _searchDebounce?.cancel();
+
+    _currentSearch = '';
+    searchController.clear();
+
+    await getApartments(isSearch: false, isLoadMore: false);
   }
 
   bool get hasAnyFilterSelected {
@@ -282,134 +345,6 @@ class ApartmentViewModel
     );
   }
 
-  /*
-  Future<void> getApartments({
-    bool isLoadMore = false,
-    bool updateFilterData = true,
-    String? sessionId,
-    String? search,
-    String? location,
-    String? city,
-    String? apartmentGroupName,
-    int? minRent,
-    int? maxRent,
-    int? minTG,
-    int? maxTG,
-  }) async {
-    try {
-      String? activeSessionId = state.currentSessionId;
-      if (sessionId != null && sessionId.isNotEmpty) {
-        activeSessionId = sessionId;
-        state = state.copyWith(currentSessionId: () => sessionId);
-      }
-
-      final bool useCurrentFilters = state.isFilterApplied;
-
-      final bool appliedRentChanged =
-          state.appliedCampaignRange.start.round() !=
-              state.minCampaignRent.round() ||
-          state.appliedCampaignRange.end.round() !=
-              state.maxCampaignRent.round();
-
-      final bool appliedTGChanged =
-          state.appliedTGRange.start.round() != state.minTG.round() ||
-          state.appliedTGRange.end.round() != state.maxTG.round();
-
-      final requestLocation =
-          location ?? (useCurrentFilters ? state.appliedLocation : null);
-
-      final requestCity =
-          city ?? (useCurrentFilters ? state.appliedCity : null);
-
-      final requestApartmentGroupName =
-          apartmentGroupName ??
-          (useCurrentFilters ? state.appliedGroupedName : null);
-
-      final requestMinRent =
-          minRent ??
-          (useCurrentFilters && appliedRentChanged
-              ? state.appliedCampaignRange.start.round()
-              : null);
-
-      final requestMaxRent =
-          maxRent ??
-          (useCurrentFilters && appliedRentChanged
-              ? state.appliedCampaignRange.end.round()
-              : null);
-
-      final requestMinTG =
-          minTG ??
-          (useCurrentFilters && appliedTGChanged
-              ? state.appliedTGRange.start.round()
-              : null);
-
-      final requestMaxTG =
-          maxTG ??
-          (useCurrentFilters && appliedTGChanged
-              ? state.appliedTGRange.end.round()
-              : null);
-      int nextPage = state.page;
-      List<Apartment> currentList = List.from(state.apartments);
-
-      if (kDebugMode) {
-        print(
-          "FILTER API PARAMS => "
-          "sessionId: $activeSessionId, "
-          "location: $requestLocation, "
-          "city: $requestCity, "
-          "apartmentGroupName: $requestApartmentGroupName, "
-          "minRent: $requestMinRent, "
-          "maxRent: $requestMaxRent, "
-          "minTG: $requestMinTG, "
-          "maxTG: $requestMaxTG",
-        );
-      }
-
-      if (isLoadMore) {
-        state = state.copyWith(isPaginationLoading: true);
-        nextPage++;
-      } else {
-        state = state.copyWith(isLoading: true);
-        nextPage = 1;
-        currentList.clear();
-      }
-
-      final response = await apiService.getApartmentSummary(
-        pageNumber: nextPage,
-        count: 10,
-        sessionId: activeSessionId,
-        search: search,
-        location: requestLocation,
-        city: requestCity,
-        apartmentGroupName: requestApartmentGroupName,
-        minRent: requestMinRent,
-        maxRent: requestMaxRent,
-        minTG: requestMinTG,
-        maxTG: requestMaxTG,
-      );
-
-      if (response.success == true) {
-        currentList.addAll(response.data?.apartments ?? []);
-        state = state.copyWith(
-          apartmentData: () => response.data,
-          totalPages: response.data?.totalPages ?? 1,
-          apartments: currentList,
-          allApartments: currentList,
-          page: nextPage,
-        );
-
-        if (!isLoadMore && updateFilterData && !state.isFilterApplied) {
-          setFilterDataFromApi(response.data);
-        }
-      }
-    } catch (e) {
-      AppToast.showError(e.toString());
-      print("$e");
-    } finally {
-      state = state.copyWith(isLoading: false, isPaginationLoading: false);
-    }
-  }
-*/
   Future<void> getApartments({
     bool isLoadMore = false,
     bool updateFilterData = true,
@@ -478,7 +413,7 @@ class ApartmentViewModel
               ? state.appliedTGRange.end.round()
               : null);
 
-      int nextPage = state.page;
+      /*int nextPage = state.page;
       List<Apartment> currentList = List.from(state.apartments);
 
       if (!isSearch) {
@@ -492,6 +427,17 @@ class ApartmentViewModel
         }
       } else {
         state = state.copyWith(isLoading: true);
+      }*/
+      int nextPage = state.page;
+      List<Apartment> currentList = List.from(state.apartments);
+
+      if (isLoadMore) {
+        state = state.copyWith(isPaginationLoading: true);
+        nextPage++;
+      } else {
+        state = state.copyWith(isLoading: true);
+        nextPage = 1;
+        currentList.clear();
       }
 
       if (kDebugMode) {
@@ -503,10 +449,13 @@ class ApartmentViewModel
           "count: ${isSearch ? null : 10}",
         );
       }
+      print("requestApartmentGroupName=$requestApartmentGroupName");
 
       final response = await apiService.getApartmentSummary(
-        pageNumber: isSearch ? null : nextPage,
-        count: isSearch ? null : 10,
+        /* pageNumber: isSearch ? null : nextPage,
+        count: isSearch ? null : 10,*/
+        pageNumber: nextPage,
+        count: 10,
         sessionId: activeSessionId,
         search: search,
         location: requestLocation,
@@ -519,36 +468,21 @@ class ApartmentViewModel
       );
 
       if (response.success == true) {
-        // SEARCH RESPONSE
+        /*// SEARCH RESPONSE
         if (isSearch) {
           state = state.copyWith(apartments: response.data?.apartments ?? []);
           return;
-        }
+        }*/
 
-        // NORMAL LIST RESPONSE
         currentList.addAll(response.data?.apartments ?? []);
 
         state = state.copyWith(
           apartmentData: () => response.data,
           totalPages: response.data?.totalPages ?? 1,
           apartments: currentList,
-          allApartments: currentList,
           page: nextPage,
+          allApartments: isSearch ? state.allApartments : currentList,
         );
-        if (kDebugMode) {
-          print("========== ALL APARTMENTS ==========");
-          print("Total Stored: ${state.allApartments.length}");
-
-          for (final apartment in state.allApartments) {
-            print(
-              "Name: ${apartment.apartmentName}, "
-              "City: ${apartment.city}, "
-              "Location: ${apartment.location}",
-            );
-          }
-
-          print("====================================");
-        }
 
         if (!isLoadMore && updateFilterData && !state.isFilterApplied) {
           setFilterDataFromApi(response.data);
@@ -721,8 +655,10 @@ class ApartmentViewModel
     final bool isApplied =
         state.selectedLocation != null ||
         state.selectedCity != null ||
+        state.selectedGroupedName != null ||
         isRentChanged ||
         isTGChanged;
+
     final selectedLocation = state.selectedLocation;
     final selectedCity = state.selectedCity;
     final selectedApartmentGroupName = state.selectedGroupedName;

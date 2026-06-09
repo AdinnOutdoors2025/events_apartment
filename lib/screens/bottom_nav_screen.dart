@@ -100,7 +100,7 @@ class _BottomNavScreenState extends ConsumerState<BottomNavScreen> {
             BottomNavigationBarItem(
               icon: Icon(Icons.apartment_outlined),
               activeIcon: Icon(Icons.apartment_sharp),
-              label: "Upload",
+              label: "Apartments",
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.more_horiz),

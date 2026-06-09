@@ -5,8 +5,9 @@ import 'apartment_screen_content.dart';
 
 class UploadApartmentScreen extends ConsumerWidget {
   final String sessionId;
+  final String filename;
 
-  const UploadApartmentScreen({super.key, required this.sessionId});
+  const UploadApartmentScreen({super.key, required this.sessionId,required this.filename,});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -17,6 +18,7 @@ class UploadApartmentScreen extends ConsumerWidget {
       state: state,
       viewModel: viewModel,
       sessionId: sessionId,
+      filename: filename,
     );
   }
 }

@@ -13,6 +13,7 @@ import 'apartment_viewmodel.dart';
 
 class UploadState {
   final File? selectedFile;
+  final String? fileName;
   final bool isLoading;
   final bool isRecentLoading;
   final bool isPaginationLoading;
@@ -23,6 +24,7 @@ class UploadState {
 
   UploadState({
     this.selectedFile,
+    this.fileName,
     this.isLoading = false,
     this.isRecentLoading = false,
     this.isPaginationLoading = false,
@@ -34,6 +36,7 @@ class UploadState {
 
   UploadState copyWith({
     File? Function()? selectedFile,
+    String? fileName,
     bool? isLoading,
     bool? isRecentLoading,
     bool? isPaginationLoading,
@@ -44,6 +47,7 @@ class UploadState {
   }) {
     return UploadState(
       selectedFile: selectedFile != null ? selectedFile() : this.selectedFile,
+      fileName: fileName ?? this.fileName,
       isLoading: isLoading ?? this.isLoading,
       isRecentLoading: isRecentLoading ?? this.isRecentLoading,
       isPaginationLoading: isPaginationLoading ?? this.isPaginationLoading,
@@ -83,15 +87,15 @@ class UploadViewModel extends Notifier<UploadState> {
 
   Future<File?> pickExcelFile() async {
     try {
-      // final dynamic picker = (FilePicker as dynamic).platform;
       FilePickerResult? result = await FilePicker.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['xlsx'],
+        allowedExtensions: ['xlsx', 'xls'],
       );
 
       if (result != null && result.files.single.path != null) {
+
         final file = File(result.files.single.path!);
-        state = state.copyWith(selectedFile: () => file);
+        state = state.copyWith(selectedFile: () => file, fileName: result.files.single.name,);
         return file;
       }
     } catch (e) {

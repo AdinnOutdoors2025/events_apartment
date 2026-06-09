@@ -14,6 +14,7 @@ class UploadSummary extends ConsumerWidget {
   final UploadData? uploadData;
   final Datas? listData;
   final String? sessionId;
+  final String fileName;
 
   const UploadSummary({
     super.key,
@@ -21,6 +22,7 @@ class UploadSummary extends ConsumerWidget {
     this.uploadData,
     this.listData,
     this.sessionId,
+    required this.fileName,
   });
 
   @override
@@ -200,10 +202,13 @@ class UploadSummary extends ConsumerWidget {
                     "sessionId": state.sessionId,
                   },
                 );*/
+                print("UploadSummary fileName: $fileName");
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) =>
-                        UploadApartmentScreen(sessionId: state.sessionId),
+                    builder: (_) => UploadApartmentScreen(
+                      sessionId: state.sessionId,
+                      filename: fileName,
+                    ),
                   ),
                 );
               },

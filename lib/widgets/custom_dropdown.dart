@@ -131,7 +131,7 @@ class CustomDropdown extends StatelessWidget {
                             ),
                           ),
                         )
-                      : Column(
+                      : /*Column(
                           children: items.map((item) {
                             final bool isSelected = item == selectedValue;
 
@@ -164,6 +164,46 @@ class CustomDropdown extends StatelessWidget {
                               ),
                             );
                           }).toList(),
+                        )*/ ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            maxHeight: 250, // fixed dropdown height
+                          ),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: items.map((item) {
+                                final bool isSelected = item == selectedValue;
+
+                                return InkWell(
+                                  onTap: () {
+                                    onChanged(item);
+                                    toggleDropdown(dropdownKey);
+                                  },
+                                  child: Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 15,
+                                    ),
+                                    color: isSelected
+                                        ? const Color(0xFFF5F5F5)
+                                        : Colors.white,
+                                    child: Text(
+                                      item,
+                                      style: TextStyle(
+                                        color: isSelected
+                                            ? const Color(0xFF111827)
+                                            : const Color(0xFF6B7280),
+                                        fontSize: 16,
+                                        fontWeight: isSelected
+                                            ? FontWeight.w700
+                                            : FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
                         ),
                 )
               : const SizedBox.shrink(),
