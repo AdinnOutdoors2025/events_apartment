@@ -33,6 +33,7 @@ class ApartmentScreenContent extends ConsumerWidget {
       behavior: HitTestBehavior.translucent,
       onTap: () {
         FocusScope.of(context).unfocus();
+        viewModel.searchFocusNode.unfocus();
       },
       child: Scaffold(
         backgroundColor: Colors.white,
@@ -120,33 +121,10 @@ class ApartmentScreenContent extends ConsumerWidget {
               _SearchBox(viewModel: viewModel),
 
               const SizedBox(height: 14),
-              if (viewModel.appliedFilterCount > 0)
-                AppliedFilterChips(state: state, viewModel: viewModel),
-
-              if (viewModel.appliedFilterCount > 0) const SizedBox(height: 15),
-              const SizedBox(height: 1),
-              if (!state.isLoading && resultCount > 0)
-                Padding(
-                  padding: const EdgeInsets.only(top: 2, bottom: 2),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      isSearching
-                          ? 'Showing $totalCount matching Apartment${totalCount == 1 ? '' : 's'} for "${viewModel.searchController.text.trim()}"'
-                          : 'Showing $totalCount Apartments',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ),
-                ),
-
-              const SizedBox(height: 12),
+              //   const SizedBox(height: 5),
               if (viewModel.isSessionBasedData && state.apartments.isNotEmpty)
                 Container(
-                  margin: const EdgeInsets.only(bottom: 14),
+                  margin: const EdgeInsets.only(bottom: 7),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 14,
                     vertical: 12,
@@ -159,19 +137,26 @@ class ApartmentScreenContent extends ConsumerWidget {
                   child: Row(
                     children: [
                       Expanded(
-                        child: /*Text(
-                          "Showing uploaded excel data only",
-                          style: TextStyle(
-                            color: AppColors.red,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),*/ Text(
-                          "Showing uploaded $filename data only",
-                          style: const TextStyle(
-                            color: AppColors.red,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
+                        child: RichText(
+                          text: TextSpan(
+                            children: [
+                              const TextSpan(
+                                text: "Showing only Apartments from ",
+                                style: TextStyle(
+                                  color: AppColors.red,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              TextSpan(
+                                text: filename ?? '',
+                                style: const TextStyle(
+                                  color: Colors.black87, // Different color
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -186,6 +171,29 @@ class ApartmentScreenContent extends ConsumerWidget {
                         ),
                       ),
                     ],
+                  ),
+                ),
+              const SizedBox(height: 1),
+              if (viewModel.appliedFilterCount > 0)
+                AppliedFilterChips(state: state, viewModel: viewModel),
+
+              if (viewModel.appliedFilterCount > 0) const SizedBox(height: 15),
+              const SizedBox(height: 1),
+              if (!state.isLoading && resultCount > 0)
+                Padding(
+                  padding: const EdgeInsets.only(top: 2, bottom: 10),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      isSearching
+                          ? 'Showing $totalCount matching Apartment${totalCount == 1 ? '' : 's'} for "${viewModel.searchController.text.trim()}"'
+                          : 'Showing $totalCount Apartments',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey,
+                      ),
+                    ),
                   ),
                 ),
               Expanded(
@@ -208,7 +216,7 @@ class ApartmentScreenContent extends ConsumerWidget {
                       child: ListView.separated(
                         controller: viewModel.scrollController,
                         physics: const AlwaysScrollableScrollPhysics(),
-                        shrinkWrap: true,
+                        padding: const EdgeInsets.only(bottom: 20),
                         itemCount:
                             items.length + (state.isPaginationLoading ? 1 : 0),
                         separatorBuilder: (_, __) => const SizedBox(height: 14),
@@ -222,6 +230,7 @@ class ApartmentScreenContent extends ConsumerWidget {
 
                           return GestureDetector(
                             onTap: () async {
+                              viewModel.searchFocusNode.unfocus();
                               /* Navigator.of(
                                 context,
                                 rootNavigator: true,
@@ -240,6 +249,8 @@ class ApartmentScreenContent extends ConsumerWidget {
                                   },
                                 ),
                               );
+                              viewModel.searchFocusNode.unfocus();
+                              FocusManager.instance.primaryFocus?.unfocus();
                             },
                             child: ApartmentRateCard(
                               apartment: items[index],
@@ -376,7 +387,7 @@ class FilterBottomSheet extends ConsumerWidget {
                             range.end.round() != state.maxCampaignRent.round();
 
                         return RangeFilterTile(
-                          title: 'Campaign Price Range (₹ / Day)',
+                          title: 'Per Day Rent Range (₹ / Day)',
                           values: range,
                           min: state.minCampaignRent,
                           max: state.maxCampaignRent,
@@ -414,7 +425,7 @@ class FilterBottomSheet extends ConsumerWidget {
                           values: range,
                           min: state.minTG,
                           max: state.maxTG,
-                          step: 50,
+                          step: 1000,
                           isChanged: isChanged,
                           startText: Helpers().formatIndianAmount(
                             range.start.round(),
@@ -651,6 +662,7 @@ class _SearchBox extends StatelessWidget {
       ),
       child: TextField(
         controller: viewModel.searchController,
+        focusNode: viewModel.searchFocusNode,
         cursorColor: AppColors.red,
         onChanged: (value) {
           viewModel.searchApartments(value);
@@ -770,6 +782,7 @@ class ApartmentRateCard extends ConsumerWidget {
                     ),
                     InkWell(
                       onTap: () async {
+                        viewModel.searchFocusNode.unfocus();
                         final result = await Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -955,7 +968,7 @@ class _ApartmentImage extends StatelessWidget {
         errorBuilder: (context, error, stackTrace) {
           return Container(
             width: 94,
-            height: 120,
+            height: 150,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(13),
               gradient: const LinearGradient(
@@ -1104,9 +1117,9 @@ class AppliedFilterChips extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(Icons.close, color: Color(0xFFE5212A), size: 13),
-            SizedBox(width: 5),
             Text(label, style: TextStyle(fontSize: 11)),
+            SizedBox(width: 5),
+            Icon(Icons.close, color: Color(0xFFE5212A), size: 13),
           ],
         ),
       ),

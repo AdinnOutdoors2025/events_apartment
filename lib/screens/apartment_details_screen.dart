@@ -36,7 +36,7 @@ class ApartmentDetailsScreen extends ConsumerWidget {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                padding: const EdgeInsets.fromLTRB(20, 5, 20, 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -137,7 +137,7 @@ class _OverviewTab extends StatelessWidget {
           ),
         ),
 
-        const SizedBox(height: 15),
+        const SizedBox(height: 1),
 
         DetailsInfoCard(
           rows: [
@@ -151,8 +151,10 @@ class _OverviewTab extends StatelessWidget {
             DetailRowData(
               icon: Icons.trip_origin_rounded,
               title: 'TG Value',
-              value:
-                  "${Helpers().formatIndianAmount(apartment.fromTGValues)} - ${Helpers().formatIndianAmount(apartment.toTGValues)}",
+              value: Helpers().formatTGRange(
+                apartment.fromTGValues,
+                apartment.toTGValues,
+              ),
             ),
 
             DetailRowData(
@@ -173,12 +175,11 @@ class _OverviewTab extends StatelessWidget {
               title: 'Apartment Rent / Day',
               value:
                   "₹${Helpers().numberFormatter.format(apartment.perDayRent ?? 0)}/day",
-              //   "₹${apartment.perDayRent ?? 0}/day",
               valueColor: Colors.green,
             ),
           ],
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 10),
 
         if (isEdited) ...[
           LastUpdatedInfoCard(
@@ -262,7 +263,7 @@ class DetailsInfoCard extends StatelessWidget {
         return Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 2),
               child: Row(
                 children: [
                   Icon(item.icon, color: AppColors.red, size: 22),
@@ -289,7 +290,7 @@ class DetailsInfoCard extends StatelessWidget {
                             textAlign: TextAlign.right,
                             style: TextStyle(
                               color: item.valueColor ?? Colors.black,
-                              fontSize: 15,
+                              fontSize: 14,
                               fontWeight: FontWeight.w800,
                             ),
                           ),

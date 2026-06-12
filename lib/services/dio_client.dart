@@ -59,7 +59,10 @@ class DioClient {
 
           /// Snackbar Error
           //      Get.snackbar("Error", errorMessage);
-          AppToast.showSuccess(errorMessage);
+        //  AppToast.showSuccess(errorMessage);
+          if (kDebugMode) {
+            print("ERRORDio => $errorMessage");
+          }
 
           handler.next(error);
         },

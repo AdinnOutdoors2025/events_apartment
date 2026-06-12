@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../model/get_list_model.dart';
+import '../model/recent_upload_model.dart';
 import '../model/upload_file_model.dart';
 import '../utils/helpers.dart';
 
@@ -29,8 +30,10 @@ class UploadSummaryState {
   });
 }
 
+/*
 class UploadSummaryViewModel
-    extends FamilyNotifier<UploadSummaryState, Map<String, dynamic>> {
+    extends FamilyNotifier<UploadSummaryState,
+Map<String, dynamic>> {
   @override
   UploadSummaryState build(Map<String, dynamic> arg) {
     final bool isNewUpload = arg["isNewUpload"] ?? false;
@@ -98,10 +101,115 @@ class UploadSummaryViewModel
     );
   }
 }
+*/
+class UploadSummaryViewModel
+    extends FamilyNotifier<UploadSummaryState, UploadSummaryArgs> {
+  @override
+  UploadSummaryState build(UploadSummaryArgs arg) {
+    String fileName = "";
+    int totalRows = 0;
+    int insertedCount = 0;
+    int updatedCount = 0;
+    int skippedCount = 0;
+    String uploadedAt = "";
+    String sessionId = "";
 
-final uploadSummaryFamilyProvider =
+    if (arg.isNewUpload) {
+      final uploadData = arg.uploadData;
+
+      fileName = uploadData?.fileName ?? "";
+      totalRows = uploadData?.totalRows ?? 0;
+      insertedCount = uploadData?.insertedCount ?? 0;
+      updatedCount = uploadData?.updatedCount ?? 0;
+      skippedCount = uploadData?.skippedCount ?? 0;
+      uploadedAt = "";
+      sessionId = uploadData?.sessionId ?? "";
+    } else {
+      final recent = arg.recentUpload;
+
+      fileName = recent?.fileName ?? "";
+      totalRows = recent?.totalRows ?? 0;
+      insertedCount = recent?.insertedCount ?? 0;
+      updatedCount = recent?.updatedCount ?? 0;
+      skippedCount = recent?.skippedCount ?? 0;
+      uploadedAt = recent?.updatedAt ?? '';
+      sessionId = recent?.sessionId ?? "";
+    }
+
+    final summaryList = [
+      {
+        "title": "Total Rows",
+        "value": "$totalRows",
+        "color": Colors.deepPurple,
+      },
+      {
+        "title": "Added",
+        "value": "$insertedCount",
+        "color": Colors.green,
+      },
+      {
+        "title": "Updated",
+        "value": "$updatedCount",
+        "color": Colors.blue,
+      },
+      {
+        "title": "Duplicate",
+        "value": "$skippedCount",
+        "color": Colors.orange,
+      },
+    ];
+
+    return UploadSummaryState(
+      fileName: fileName,
+      totalRows: totalRows,
+      insertedCount: insertedCount,
+      updatedCount: updatedCount,
+      skippedCount: skippedCount,
+      uploadedAt: uploadedAt,
+      sessionId: sessionId,
+      isNewUpload: arg.isNewUpload,
+      summaryList: summaryList,
+    );
+  }
+}
+class UploadSummaryArgs {
+  final bool isNewUpload;
+  final UploadData? uploadData;
+  final Session? recentUpload;
+
+  const UploadSummaryArgs({
+    required this.isNewUpload,
+    this.uploadData,
+    this.recentUpload,
+  });
+
+  @override
+  bool operator ==(Object other) {
+    return other is UploadSummaryArgs &&
+        other.isNewUpload == isNewUpload &&
+        other.uploadData?.sessionId == uploadData?.sessionId &&
+        other.recentUpload?.sessionId == recentUpload?.sessionId;
+  }
+
+  @override
+  int get hashCode {
+    return Object.hash(
+      isNewUpload,
+      uploadData?.sessionId,
+      recentUpload?.sessionId,
+    );
+  }
+}
+
+/*final uploadSummaryFamilyProvider =
     NotifierProvider.family<
       UploadSummaryViewModel,
       UploadSummaryState,
       Map<String, dynamic>
-    >(UploadSummaryViewModel.new);
+    >(UploadSummaryViewModel.new);*/
+final uploadSummaryFamilyProvider =
+NotifierProvider.family<
+    UploadSummaryViewModel,
+    UploadSummaryState,
+    UploadSummaryArgs
+>(UploadSummaryViewModel.new);

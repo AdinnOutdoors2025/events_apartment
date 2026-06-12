@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
 import '../model/get_list_model.dart';
+import '../model/recent_upload_model.dart';
 import '../model/upload_file_model.dart';
 import '../viewmodel/apartment_viewmodel.dart';
 import '../viewmodel/upload_summary_viewmodel.dart';
@@ -14,7 +15,8 @@ class UploadSummary extends ConsumerWidget {
   final UploadData? uploadData;
   final Datas? listData;
   final String? sessionId;
-  final String fileName;
+  final Session? recentUpload;
+
 
   const UploadSummary({
     super.key,
@@ -22,25 +24,35 @@ class UploadSummary extends ConsumerWidget {
     this.uploadData,
     this.listData,
     this.sessionId,
-    required this.fileName,
+    this.recentUpload,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final apartmentState = ref.watch(apartmentFamilyProvider(sessionId));
+   /* final apartmentState = ref.watch(apartmentFamilyProvider(sessionId));
     if (!isNewUpload && apartmentState.isLoading) {
       return const Scaffold(
         backgroundColor: Colors.white,
         body: Center(child: CircularProgressIndicator()),
       );
     }
-
-    final state = ref.watch(
+*/
+   /* final state = ref.watch(
       uploadSummaryFamilyProvider({
         "isNewUpload": isNewUpload,
         "uploadData": uploadData,
-        "listData": apartmentState.apartmentData,
+       // "listData": apartmentState.apartmentData,
+        "recentUpload": recentUpload,
       }),
+    );*/
+    final state = ref.watch(
+      uploadSummaryFamilyProvider(
+        UploadSummaryArgs(
+          isNewUpload: isNewUpload,
+          uploadData: uploadData,
+          recentUpload: recentUpload,
+        ),
+      ),
     );
 
     return Scaffold(
@@ -202,12 +214,12 @@ class UploadSummary extends ConsumerWidget {
                     "sessionId": state.sessionId,
                   },
                 );*/
-                print("UploadSummary fileName: $fileName");
+                print("UploadSummary fileName: ${state.fileName}");
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => UploadApartmentScreen(
                       sessionId: state.sessionId,
-                      filename: fileName,
+                      filename: state.fileName,
                     ),
                   ),
                 );

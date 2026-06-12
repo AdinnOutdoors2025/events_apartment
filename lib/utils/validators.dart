@@ -12,25 +12,33 @@ class Validator {
     }
 
     if (!RegExp(r'^[0-9]{10}$').hasMatch(value!.trim())) {
-      return "Enter valid 10 digit Phone Number";
+      return "Enter Valid 10 Digit Phone Number";
     }
 
     return null;
   }
 
   static String? accountNumber(String? value) {
-    if (!RegExp(r'^[0-9]{9,18}$').hasMatch(value!.trim())) {
-      return "Enter Valid Account Number";
+    if (value == null || value.trim().isEmpty) {
+      return null;
     }
+
+   /* if (value.length != 15) {
+      return 'Account Number must be 15 digits';
+    }*/
 
     return null;
   }
 
   static String? ifsc(String? value) {
-    if (!RegExp(
-      r'^[A-Z]{4}0[A-Z0-9]{6}$',
-    ).hasMatch(value!.trim().toUpperCase())) {
-      return "Enter Valid IFSC Code";
+    if (value == null || value.trim().isEmpty) {
+      return null;
+    }
+
+    final ifscRegex = RegExp(r'^[A-Z]{4}0[A-Z0-9]{6}$');
+
+    if (!ifscRegex.hasMatch(value.toUpperCase())) {
+      return 'Enter a Valid IFSC Code';
     }
 
     return null;
@@ -117,4 +125,6 @@ class Validator {
 
     return null;
   }
+
+
 }

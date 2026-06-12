@@ -50,7 +50,7 @@ class LoginPage extends ConsumerWidget {
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.topCenter,
                         child: SizedBox(
-                          width: screenWidth - 52,
+                          width: screenWidth - 20,
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -219,7 +219,7 @@ class LoginForm extends StatelessWidget {
                 LengthLimitingTextInputFormatter(10),
               ],
               focusNode: viewModel.phoneFocus,
-              validator: (value) => Validator.validate(value, "Phone number"),
+              validator: (value) => Validator.validate(value, "Phone Number"),
             ),
             const SizedBox(height: 14),
             CustomTextField(

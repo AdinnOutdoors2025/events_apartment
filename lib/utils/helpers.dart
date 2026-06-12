@@ -87,6 +87,25 @@ class Helpers {
       debugPrint("SMS error: $e");
     }
   }
+  String formatTGRange(int? from, int? to) {
+    final fromText = formatIndianAmount(from);
+    final toText = formatIndianAmount(to);
+
+    // Both null
+    if (from == null && to == null) return '-';
+
+    // Both zero
+    if (from == 0 && to == 0) return '0';
+
+    // One side missing
+    if (from == null) return toText;
+    if (to == null) return fromText;
+
+    // Same value
+    if (from == to) return fromText;
+
+    return '$fromText - $toText';
+  }
 }
 
 class IndianCurrencyInputFormatter extends TextInputFormatter {
@@ -116,3 +135,5 @@ class IndianCurrencyInputFormatter extends TextInputFormatter {
     );
   }
 }
+
+

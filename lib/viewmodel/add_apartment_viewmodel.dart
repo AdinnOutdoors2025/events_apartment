@@ -35,7 +35,7 @@ class ApartmentFormState {
     this.location = '',
     this.jioLocation = '',
     this.contactPersonPhone = '',
-    this.contactPersonName = '-',
+    this.contactPersonName = '',
     this.accountHolderName = '',
     this.bankName = '-',
     this.accountNumber = '',
@@ -215,13 +215,8 @@ class ApartmentFormNotifier extends StateNotifier<ApartmentFormState> {
       "PerDayRent":
           int.tryParse(state.perDayRent.toString().replaceAll(',', '')) ?? "",
     };
-
-    /* if (isEdit && state.apartmentId.isNotEmpty) {
-      body["apartmentId"] = state.apartmentId;
-    }
-    return await _apiService.saveApartment(body: body);*/
     if (isEdit) {
-      body["apartmentId"] = state.apartmentId;
+      body["id"] = state.apartmentId;
     }
 
     if (kDebugMode) {

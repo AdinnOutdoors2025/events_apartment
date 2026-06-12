@@ -121,7 +121,6 @@ class UploadViewModel extends Notifier<UploadState> {
       );
 
       if (response.success == true) {
-        // Trigger tagged apartment view update
         final sessionId = response.data?.sessionId ?? "";
         ref
             .read(apartmentFamilyProvider(sessionId).notifier)

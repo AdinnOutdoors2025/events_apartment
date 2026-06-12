@@ -148,11 +148,13 @@ class ApartmentViewModel
   String _currentSearch = '';
   final TextEditingController searchController = TextEditingController();
   bool _isLocalSearch = false;
+  final searchFocusNode = FocusNode();
 
   @override
   ApartmentState build(String? arg) {
     ref.onDispose(() {
       scrollController.dispose();
+      searchFocusNode.dispose();
     });
 
     Future.microtask(() {
@@ -160,26 +162,14 @@ class ApartmentViewModel
     });
 
     scrollController.addListener(() {
-      if (kDebugMode) {
-        print(
-          "pixels=${scrollController.position.pixels}"
-          " max=${scrollController.position.maxScrollExtent}"
-          " extentAfter=${scrollController.position.extentAfter}"
-          " page=${state.page}"
-          " totalPages=${state.totalPages}"
-          " loading=${state.isPaginationLoading}",
-        );
-      }
       if (scrollController.position.pixels >=
               scrollController.position.maxScrollExtent - 200 &&
           !state.isPaginationLoading &&
           state.page < state.totalPages) {
         getApartments(
           isLoadMore: true,
-
           search: _currentSearch.isNotEmpty ? _currentSearch : null,
           isSearch: _currentSearch.isNotEmpty,
-
           location: state.appliedLocation,
           city: state.appliedCity,
           apartmentGroupName: state.appliedGroupedName,
@@ -206,57 +196,12 @@ class ApartmentViewModel
         );
       }
     });
-    return ApartmentState(currentSessionId: arg);
+    return ApartmentState(currentSessionId: arg,isLoading: true,);
   }
 
   bool get isSessionBasedData {
     return state.currentSessionId?.isNotEmpty ?? false;
   }
-
-  /*
-  void searchApartments(String query) {
-    print("Searching in ${state.allApartments.length} apartments");
-
-    for (final apartment in state.allApartments) {
-      print(apartment.apartmentName);
-    }
-    _searchDebounce?.cancel();
-
-    _currentSearch = query;
-    if (query.trim().isEmpty) {
-      state = state.copyWith(apartments: List.from(state.allApartments));
-      return;
-    }
-
-    final searchText = query.toLowerCase();
-
-    final localResults = state.allApartments.where((apartment) {
-      return (apartment.apartmentName ?? '').toLowerCase().contains(
-            searchText,
-          ) ||
-          (apartment.location ?? '').toLowerCase().contains(searchText) ||
-          (apartment.city ?? '').toLowerCase().contains(searchText) ||
-          (apartment.residencyCount ?? 0).toString().contains(searchText) ||
-          // (apartment.perDayRent ?? 0).toString().contains(searchText) ||
-          (apartment.perDayRent ?? 0).toString().contains(
-            searchText.replaceAll(',', ''),
-          ) ||
-          (apartment.fromTGValues ?? 0).toString().contains(searchText) ||
-          (apartment.toTGValues ?? 0).toString().contains(searchText);
-    }).toList();
-
-    if (localResults.isNotEmpty) {
-      _isLocalSearch = true;
-      state = state.copyWith(apartments: localResults);
-      return;
-    }
-    _isLocalSearch = false;
-
-    _searchDebounce = Timer(const Duration(milliseconds: 500), () {
-      getApartments(search: query, isSearch: true);
-    });
-  }
-*/
 
   void searchApartments(String query) {
     _searchDebounce?.cancel();
@@ -272,24 +217,12 @@ class ApartmentViewModel
     });
   }
 
-  /*Future<void> clearSearch() async {
-    _searchDebounce?.cancel();
-    _currentSearch = '';
-
-    searchController.clear();
-
-   // state = state.copyWith(apartments: List.from(state.allApartments));
-    await getApartments(
-      search: null,
-      isSearch: true,
-    );
-  }*/
   Future<void> clearSearch() async {
     _searchDebounce?.cancel();
 
     _currentSearch = '';
     searchController.clear();
-
+    searchFocusNode.unfocus();
     await getApartments(isSearch: false, isLoadMore: false);
   }
 
@@ -413,21 +346,6 @@ class ApartmentViewModel
               ? state.appliedTGRange.end.round()
               : null);
 
-      /*int nextPage = state.page;
-      List<Apartment> currentList = List.from(state.apartments);
-
-      if (!isSearch) {
-        if (isLoadMore) {
-          state = state.copyWith(isPaginationLoading: true);
-          nextPage++;
-        } else {
-          state = state.copyWith(isLoading: true);
-          nextPage = 1;
-          currentList.clear();
-        }
-      } else {
-        state = state.copyWith(isLoading: true);
-      }*/
       int nextPage = state.page;
       List<Apartment> currentList = List.from(state.apartments);
 
@@ -452,8 +370,6 @@ class ApartmentViewModel
       print("requestApartmentGroupName=$requestApartmentGroupName");
 
       final response = await apiService.getApartmentSummary(
-        /* pageNumber: isSearch ? null : nextPage,
-        count: isSearch ? null : 10,*/
         pageNumber: nextPage,
         count: 10,
         sessionId: activeSessionId,
@@ -468,12 +384,6 @@ class ApartmentViewModel
       );
 
       if (response.success == true) {
-        /*// SEARCH RESPONSE
-        if (isSearch) {
-          state = state.copyWith(apartments: response.data?.apartments ?? []);
-          return;
-        }*/
-
         currentList.addAll(response.data?.apartments ?? []);
 
         state = state.copyWith(

@@ -71,8 +71,7 @@ class _BottomNavScreenState extends ConsumerState<BottomNavScreen> {
         }
       },
       child: Scaffold(
-        body: pages
-        [state.currentIndex],
+        body: pages[state.currentIndex],
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: state.currentIndex,
           backgroundColor: Colors.white,

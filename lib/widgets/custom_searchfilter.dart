@@ -32,7 +32,6 @@ class CustomSearchFilter extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       child: Row(
         children: [
-          /// SEARCH BAR
           if (showSearch)
             Expanded(
               child: TextField(
@@ -56,11 +55,9 @@ class CustomSearchFilter extends StatelessWidget {
               ),
             ),
 
-          /// SPACE
           if (showSearch && (showCalendar || showFilter))
             const SizedBox(width: 8),
 
-          /// CALENDAR BUTTON
           if (showCalendar)
             Container(
               height: 48,
@@ -75,10 +72,9 @@ class CustomSearchFilter extends StatelessWidget {
               ),
             ),
 
-          /// SPACE
+
           if (showCalendar && showFilter) const SizedBox(width: 8),
 
-          /// FILTER DROPDOWN
           if (showFilter)
             Container(
               height: 48,

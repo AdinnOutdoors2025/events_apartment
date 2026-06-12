@@ -104,7 +104,6 @@ class ApiService {
     int? maxTG,
   }) async {
     try {
-      // Map<String, dynamic> body = {"pageNumber": pageNumber, "count": count};
       final body = <String, dynamic>{};
       if (pageNumber != null) {
         body["pageNumber"] = pageNumber;
@@ -176,8 +175,10 @@ class ApiService {
       );
 
       return OrderHistoryModel.fromJson(response.data);
+    } on DioException catch (e) {
+      throw handleError(e);
     } catch (e) {
-      rethrow;
+      throw e.toString();
     }
   }
 
@@ -249,8 +250,10 @@ class ApiService {
           },
         ),
       );
+    } on DioException catch (e) {
+      throw handleError(e);
     } catch (e) {
-      rethrow;
+      throw e.toString();
     }
   }
 

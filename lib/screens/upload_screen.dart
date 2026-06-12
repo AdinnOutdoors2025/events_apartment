@@ -145,7 +145,6 @@ class _UploadFileTab extends ConsumerWidget {
                           builder: (_) => UploadSummary(
                             isNewUpload: true,
                             uploadData: response.data,
-                            fileName: ref.read(uploadViewModelProvider).fileName ?? "",
                           ),
                         ),
                       );
@@ -220,7 +219,8 @@ class _UploadFileTab extends ConsumerWidget {
                             MaterialPageRoute(
                               builder: (_) => UploadSummary(
                                 isNewUpload: false,
-                                sessionId: sessionId, fileName: ref.read(uploadViewModelProvider).fileName ?? "",
+                                // sessionId: sessionId,
+                                recentUpload: item,
                               ),
                             ),
                           );
@@ -377,7 +377,7 @@ class _UploadExcelCard extends StatelessWidget {
           const SizedBox(height: 20),
 
           const Text(
-            "Upload apartment\nExcel file",
+            "Upload Apartment\nExcel file",
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 20,
@@ -389,7 +389,7 @@ class _UploadExcelCard extends StatelessWidget {
           const SizedBox(height: 12),
 
           Text(
-            ".xlsx file upto 5MB",
+            "Excel file upto 5MB",
             style: TextStyle(
               color: Colors.grey.shade600,
               fontSize: 14,
@@ -460,70 +460,74 @@ class _RecentUploadTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: InkWell(
-        onTap: onTap,
+      child: Material(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: Colors.grey.shade200, width: 1),
-          ),
-          child: Row(
-            children: [
-              Image.network(
-                'https://cdn-icons-png.flaticon.com/512/732/732220.png',
-                height: 42,
-              ),
-
-              const SizedBox(width: 14),
-
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      fileName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 14,
-                      ),
-                    ),
-
-                    const SizedBox(height: 6),
-
-                    Text(
-                      updatedAt,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.grey.shade600,
-                        fontSize: 13,
-                      ),
-                    ),
-
-                    const SizedBox(height: 4),
-
-                    Text(
-                      "$rows rows",
-                      style: TextStyle(
-                        color: Colors.grey.shade700,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(18),
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: Colors.grey.shade200, width: 1),
+            ),
+            child: Row(
+              children: [
+                Image.network(
+                  'https://cdn-icons-png.flaticon.com/512/732/732220.png',
+                  height: 42,
                 ),
-              ),
 
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: AppColors.textGrey,
-              ),
-            ],
+                const SizedBox(width: 14),
+
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        fileName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 14,
+                        ),
+                      ),
+
+                      const SizedBox(height: 6),
+
+                      Text(
+                        updatedAt,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 13,
+                        ),
+                      ),
+
+                      const SizedBox(height: 4),
+
+                      Text(
+                        "$rows rows",
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.textGrey,
+                ),
+              ],
+            ),
           ),
         ),
       ),
