@@ -1,4 +1,4 @@
-package com.example.apartment_project;
+package com.example.apartment_projects;
 
 import io.flutter.embedding.android.FlutterActivity;
 
