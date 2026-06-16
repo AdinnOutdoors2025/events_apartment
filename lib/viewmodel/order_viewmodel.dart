@@ -133,6 +133,7 @@ class OrderViewModel extends AutoDisposeNotifier<OrderState> {
       });
     } catch (e) {
       AppToast.showError(e.toString());
+      print(e.toString());
     }
   }
 }

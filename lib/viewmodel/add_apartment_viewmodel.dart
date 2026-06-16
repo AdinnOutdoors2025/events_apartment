@@ -37,7 +37,7 @@ class ApartmentFormState {
     this.contactPersonPhone = '',
     this.contactPersonName = '',
     this.accountHolderName = '',
-    this.bankName = '-',
+    this.bankName = '',
     this.accountNumber = '',
     this.ifscCode = '',
     this.phoneNumber = '',

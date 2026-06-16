@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import '../constants/api_constants.dart';
 import '../model/apartment_update_model.dart';
 import '../model/get_list_model.dart';
+import '../model/order_details_model.dart';
 import '../model/order_history_model.dart';
 import '../model/recent_upload_model.dart';
 import '../model/upload_file_model.dart';
@@ -175,6 +176,24 @@ class ApiService {
       );
 
       return OrderHistoryModel.fromJson(response.data);
+    } on DioException catch (e) {
+      throw handleError(e);
+    } catch (e) {
+      throw e.toString();
+    }
+  }
+  Future<OrderDetailsModel> getOrderDetails({
+    required String orderId,
+  }) async {
+    try {
+      final response = await dio.get(
+        "${ApiConstants.orderDetails}?orderId=$orderId",
+        options: Options(
+          headers: {"isRequireAuth": true},
+        ),
+      );
+
+      return OrderDetailsModel.fromJson(response.data);
     } on DioException catch (e) {
       throw handleError(e);
     } catch (e) {

@@ -281,6 +281,7 @@ class ApartmentViewModel
   Future<void> getApartments({
     bool isLoadMore = false,
     bool updateFilterData = true,
+    bool forceUpdateFilterData = false,
     bool isSearch = false,
     String? sessionId,
     String? search,
@@ -394,7 +395,12 @@ class ApartmentViewModel
           allApartments: isSearch ? state.allApartments : currentList,
         );
 
-        if (!isLoadMore && updateFilterData && !state.isFilterApplied) {
+      /*  if (!isLoadMore && updateFilterData && !state.isFilterApplied) {
+          setFilterDataFromApi(response.data);
+        }*/
+        if (!isLoadMore &&
+            updateFilterData &&
+            (!state.isFilterApplied || forceUpdateFilterData)) {
           setFilterDataFromApi(response.data);
         }
       }
@@ -495,6 +501,107 @@ class ApartmentViewModel
     );
   }
 
+  Future<void> refreshAfterApartmentEdit() async {
+    final oldAppliedCity = state.appliedCity;
+    final oldAppliedLocation = state.appliedLocation;
+    final oldAppliedGroup = state.appliedGroupedName;
+    final sessionId = state.currentSessionId;
+
+    final rentChanged =
+        state.appliedCampaignRange.start.round() != state.minCampaignRent.round() ||
+            state.appliedCampaignRange.end.round() != state.maxCampaignRent.round();
+
+    final tgChanged =
+        state.appliedTGRange.start.round() != state.minTG.round() ||
+            state.appliedTGRange.end.round() != state.maxTG.round();
+
+    final hasAnyFilter =
+        oldAppliedCity != null ||
+            oldAppliedLocation != null ||
+            oldAppliedGroup != null ||
+            rentChanged ||
+            tgChanged;
+
+    if (!hasAnyFilter) {
+      await getApartments(
+        sessionId: sessionId,
+        updateFilterData: true,
+        forceUpdateFilterData: true,
+      );
+      return;
+    }
+
+    state = state.copyWith(isLoading: true);
+
+    try {
+      final response = await apiService.getApartmentSummary(
+        pageNumber: 1,
+        count: 10,
+        sessionId: sessionId,
+        city: oldAppliedCity,
+        location: oldAppliedLocation,
+        apartmentGroupName: oldAppliedGroup,
+        minRent: rentChanged ? state.appliedCampaignRange.start.round() : null,
+        maxRent: rentChanged ? state.appliedCampaignRange.end.round() : null,
+        minTG: tgChanged ? state.appliedTGRange.start.round() : null,
+        maxTG: tgChanged ? state.appliedTGRange.end.round() : null,
+      );
+
+      if (response.success != true) return;
+
+      final filteredApartments = response.data?.apartments ?? [];
+      final filteredTotalCount = response.data?.totalCount ?? 0;
+
+      final oldCityStillExists =
+          oldAppliedCity == null ||
+              (response.data?.cityFilter ?? []).contains(oldAppliedCity);
+
+      final oldLocationStillExists =
+          oldAppliedLocation == null ||
+              (response.data?.locationFilter ?? []).contains(oldAppliedLocation);
+
+      final oldGroupStillExists =
+          oldAppliedGroup == null ||
+              (response.data?.apartmentGroupNameFilter ?? []).contains(oldAppliedGroup);
+
+      final canKeepOldFilter =
+          filteredTotalCount > 0 &&
+              filteredApartments.isNotEmpty &&
+              oldCityStillExists &&
+              oldLocationStillExists &&
+              oldGroupStillExists;
+
+      if (canKeepOldFilter) {
+        state = state.copyWith(
+          apartmentData: () => response.data,
+          totalPages: response.data?.totalPages ?? 1,
+          apartments: filteredApartments,
+          page: 1,
+          allApartments: filteredApartments,
+        );
+
+        setFilterDataFromApi(response.data);
+      } else {
+        resetFilters();
+
+        state = state.copyWith(
+          currentSessionId: () => sessionId,
+          isFilterApplied: false,
+          openedDropdown: () => null,
+        );
+
+        await getApartments(
+          sessionId: sessionId,
+          updateFilterData: true,
+          forceUpdateFilterData: true,
+        );
+      }
+    } catch (e) {
+      AppToast.showError(e.toString());
+    } finally {
+      state = state.copyWith(isLoading: false, isPaginationLoading: false);
+    }
+  }/*
   void setFilterDataFromApi(Datas? data) {
     final priceRange = data?.priceRange;
     if (priceRange == null) {
@@ -549,7 +656,113 @@ class ApartmentViewModel
       appliedTGRange: appliedTGRangeVal,
     );
   }
+*/
 
+  void setFilterDataFromApi(Datas? data) {
+    final priceRange = data?.priceRange;
+
+    final newCities = data?.cityFilter ?? [];
+    final newLocations = data?.locationFilter ?? [];
+    final newGroups = data?.apartmentGroupNameFilter ?? [];
+
+    final selectedCity =
+    newCities.contains(state.selectedCity) ? state.selectedCity : null;
+
+    final appliedCity =
+    newCities.contains(state.appliedCity) ? state.appliedCity : null;
+
+    final selectedLocation = newLocations.contains(state.selectedLocation)
+        ? state.selectedLocation
+        : null;
+
+    final appliedLocation =
+    newLocations.contains(state.appliedLocation) ? state.appliedLocation : null;
+
+    final selectedGroup = newGroups.contains(state.selectedGroupedName)
+        ? state.selectedGroupedName
+        : null;
+
+    final appliedGroup =
+    newGroups.contains(state.appliedGroupedName) ? state.appliedGroupedName : null;
+
+    if (priceRange == null) {
+      state = state.copyWith(
+        locations: newLocations,
+        cities: newCities,
+        apartmentGroupName: newGroups,
+
+        selectedCity: () => selectedCity,
+        appliedCity: () => appliedCity,
+        selectedLocation: () => selectedLocation,
+        appliedLocation: () => appliedLocation,
+        selectedGroupedName: () => selectedGroup,
+        appliedGroupName: () => appliedGroup,
+
+        minCampaignRent: 0,
+        maxCampaignRent: 0,
+        campaignPriceRange: const RangeValues(0, 0),
+        appliedCampaignRange: const RangeValues(0, 0),
+
+        minTG: 0,
+        maxTG: 0,
+        tgValueRange: const RangeValues(0, 0),
+        appliedTGRange: const RangeValues(0, 0),
+      );
+      return;
+    }
+
+    final apiMinRent = priceRange.minRent ?? 0;
+    final apiMaxRent = priceRange.maxRent ?? 0;
+    final apiMinTG = priceRange.minTG ?? 0;
+    final apiMaxTG = priceRange.maxTG ?? 0;
+
+    double minRentVal = 0;
+    double maxRentVal = 0;
+    RangeValues rentRange = const RangeValues(0, 0);
+    RangeValues appliedRentRange = const RangeValues(0, 0);
+
+    if (apiMaxRent > apiMinRent) {
+      minRentVal = apiMinRent.toDouble();
+      maxRentVal = apiMaxRent.toDouble();
+      rentRange = RangeValues(minRentVal, maxRentVal);
+      appliedRentRange = RangeValues(minRentVal, maxRentVal);
+    }
+
+    double minTGVal = 0;
+    double maxTGVal = 0;
+    RangeValues tgRange = const RangeValues(0, 0);
+    RangeValues appliedTGRangeVal = const RangeValues(0, 0);
+
+    if (apiMaxTG > apiMinTG) {
+      minTGVal = apiMinTG.toDouble();
+      maxTGVal = apiMaxTG.toDouble();
+      tgRange = RangeValues(minTGVal, maxTGVal);
+      appliedTGRangeVal = RangeValues(minTGVal, maxTGVal);
+    }
+
+    state = state.copyWith(
+      locations: newLocations,
+      cities: newCities,
+      apartmentGroupName: newGroups,
+
+      selectedCity: () => selectedCity,
+      appliedCity: () => appliedCity,
+      selectedLocation: () => selectedLocation,
+      appliedLocation: () => appliedLocation,
+      selectedGroupedName: () => selectedGroup,
+      appliedGroupName: () => appliedGroup,
+
+      minCampaignRent: minRentVal,
+      maxCampaignRent: maxRentVal,
+      campaignPriceRange: rentRange,
+      appliedCampaignRange: appliedRentRange,
+
+      minTG: minTGVal,
+      maxTG: maxTGVal,
+      tgValueRange: tgRange,
+      appliedTGRange: appliedTGRangeVal,
+    );
+  }
   Future<void> applyFilterFromSheet() async {
     final rentRange = state.campaignPriceRange;
     final tgRange = state.tgValueRange;

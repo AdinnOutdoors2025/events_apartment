@@ -1,12 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../model/order_details_model.dart';
 import '../kanban_board_screen.dart';
 
 class OverviewTab extends StatelessWidget {
   final KanbanDeal deal;
+  final OrderDetails details;
 
-  const OverviewTab({super.key, required this.deal});
+  const OverviewTab({super.key, required this.deal, required this.details});
 
   @override
   Widget build(BuildContext context) {
@@ -18,10 +20,13 @@ class OverviewTab extends StatelessWidget {
           iconBgColor: const Color(0xffEAF2FF),
           title: "Apartment Details",
           rows: [
-            DetailRow("Apartment Name", deal.apartmentName),
-            DetailRow("Location", deal.apartmentLocation),
+            DetailRow(
+              "Apartment Name",
+              details.apartmentDetails?.apartmentName ?? "-",
+            ),
+            DetailRow("Location", details.apartmentDetails?.location ?? "-"),
             //   DetailRow("Type", deal.apartmentType),
-            DetailRow("Total Units", deal.totalUnits),
+            DetailRow("Total Units", details.sqfet.toString()),
           ],
         ),
 
@@ -33,11 +38,13 @@ class OverviewTab extends StatelessWidget {
           iconBgColor: const Color(0xffFFF0E5),
           title: "Event Details",
           rows: [
-            DetailRow("Event Type", deal.eventName),
-            DetailRow("Event Date", deal.eventDate),
+            DetailRow("Event Type", details.eventDetails?.eventName ?? "-"),
+            DetailRow("Event Date", details.fromDate == null && details.toDate == null
+                ? "-"
+                : "${formatDate(details.fromDate)} - ${formatDate(details.toDate)}"),
             //  DetailRow("Time", deal.eventTime),
-            DetailRow("Expected Guests", deal.guests),
-          //  DetailRow("Setup Style", deal.setupStyle),
+            DetailRow("Expected Guests", details.promoterCount.toString()),
+            //  DetailRow("Setup Style", deal.setupStyle),
           ],
         ),
 
@@ -49,10 +56,10 @@ class OverviewTab extends StatelessWidget {
           iconBgColor: const Color(0xffEAFBEF),
           title: "Customer Details",
           rows: [
-            DetailRow("Contact Person", deal.customerName),
-            DetailRow("Phone", deal.phone),
-            DetailRow("Email", deal.email),
-            DetailRow("Company", deal.companyName),
+            DetailRow("Contact Person", details.customerDetails?.contactPersonName ?? "-"),
+            DetailRow("Phone", details.customerDetails!.contactPersonPhoneNumber ?? "-"),
+            DetailRow("Email", details.customerDetails!.email ?? "-"),
+            DetailRow("Company", details.customerDetails!.brandOrCompanyName ?? "-"),
           ],
         ),
       ],

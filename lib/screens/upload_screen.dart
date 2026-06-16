@@ -173,7 +173,7 @@ class _UploadFileTab extends ConsumerWidget {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       children: const [
-                        SizedBox(height: 80),
+                        SizedBox(height: 45),
                         Center(
                           child: Text(
                             "No Recent Uploads",

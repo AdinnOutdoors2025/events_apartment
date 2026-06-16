@@ -1,30 +1,37 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
+import '../../model/order_details_model.dart';
 import '../kanban_board_screen.dart';
 
 class PipelineHistoryTab extends StatelessWidget {
   final KanbanDeal deal;
+  final OrderDetails details;
 
-  const PipelineHistoryTab({super.key, required this.deal});
+  const PipelineHistoryTab({
+    super.key,
+    required this.deal,
+    required this.details,
+  });
 
   @override
   Widget build(BuildContext context) {
     final timeline = <Map<String, dynamic>>[];
 
-    timeline.add({
-      "title": "Enquiry",
-      "date": deal.createdAt,
-      "user": deal.createdBy,
-      "created": true,
-    });
-
-    for (final history in deal.orderHistory) {
-      timeline.add({
+    for (final history in details.orderHistory ?? []) {
+      /*timeline.add({
         "title": history.toStatusText,
-        "date": history.changedAt,
+        "date": formatDate(history.changedAt),
         "user": history.changedBy,
         "created": false,
+      });*/
+      timeline.add({
+        "title":
+            history.fromStatusText == "Created" || history.fromStatus == null
+            ? "${history.toStatusText}"
+            : "${history.fromStatusText} → ${history.toStatusText}",
+        "date": formatDate(history.changedAt),
+        "user": history.changedBy,
+        "created": history.fromStatus == null,
       });
     }
 
@@ -121,13 +128,6 @@ class TimelineItem extends StatelessWidget {
           Expanded(
             child: Container(
               padding: const EdgeInsets.only(bottom: 18),
-              decoration: showLine
-                  ? const BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: Color(0xffE5E7EB)),
-                ),
-              )
-                  : null,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

@@ -15,8 +15,14 @@ import 'apartment_details_screen.dart';
 class AddApartmentScreen extends ConsumerStatefulWidget {
   final Apartment? apartment;
   final bool showAppBar;
+  final Future<void> Function()? onApartmentUpdated;
 
-  const AddApartmentScreen({super.key, this.apartment, this.showAppBar = true});
+  const AddApartmentScreen({
+    super.key,
+    this.apartment,
+    this.showAppBar = true,
+    this.onApartmentUpdated,
+  });
 
   bool get isEdit => apartment != null;
 
@@ -166,13 +172,62 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
     }
   }
 
-  final List<String> cities = const [
+  /*final List<String> cities = const [
     'Chennai',
     'Madurai',
     'Coimbatore',
     'Trichy',
     'Salem',
     'Tirunelveli',
+  ];*/
+  final List<String> cities = const [
+    'Ariyalur',
+    'Avadi',
+    'Chengalpattu',
+    'Chennai',
+    'Coimbatore',
+    'Cuddalore',
+    'Dharmapuri',
+    'Dindigul',
+    'Erode',
+    'Hosur',
+    'Kallakurichi',
+    'Kanchipuram',
+    'Kanyakumari',
+    'Karaikudi',
+    'Karur',
+    'Krishnagiri',
+    'Kumbakonam',
+    'Madurai',
+    'Mayiladuthurai',
+    'Nagapattinam',
+    'Nagercoil',
+    'Namakkal',
+    'Ooty',
+    'Perambalur',
+    'Pollachi',
+    'Pudukkottai',
+    'Ramanathapuram',
+    'Ranipet',
+    'Salem',
+    'Sivagangai',
+    'Sivakasi',
+    'Tambaram',
+    'Tenkasi',
+    'Thanjavur',
+    'Theni',
+    'Thoothukudi',
+    'Tiruchendur',
+    'Tiruchirappalli',
+    'Tirunelveli',
+    'Tirupathur',
+    'Tiruppur',
+    'Tiruvallur',
+    'Tiruvannamalai',
+    'Tiruvarur',
+    'Vellore',
+    'Viluppuram',
+    'Virudhunagar',
   ];
 
   final List<String> states = const ['TamilNadu'];
@@ -284,49 +339,45 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
                           controller: contactNameController,
                         ),
                         const SizedBox(height: 10),
-                        _TwoColumnRow(
-                          left: _AppDropdownField(
-                            key: ValueKey(
-                              'state_${formState.state}_$_resetCounter',
-                            ),
-                            label: 'State',
-                            hint: 'Select State',
-                            icon: Icons.map_outlined,
-                            items: states,
-                            hintText: 12,
-                            validator: (value) =>
-                                Validator.validate(value, "Select State"),
-                            /*onChanged: (value) {
-                              notifier.updateStateName(value ?? '');
-                            },*/
-                            onChanged: (value) {
-                              _markChanged();
-                              notifier.updateStateName(value ?? '');
-                            },
-                            value: formState.state,
-                            isRequired: true,
+                        _AppDropdownField(
+                          key: ValueKey(
+                            'state_${formState.state}_$_resetCounter',
                           ),
-                          right: _AppDropdownField(
-                            key: ValueKey(
-                              'city_${formState.city}_$_resetCounter',
-                            ),
-                            label: 'City',
-                            hint: 'Select City',
-                            icon: Icons.location_on_outlined,
-                            items: cities,
-                            hintText: 12,
-                            validator: (value) =>
-                                Validator.validate(value, "Select City"),
-                            /* onChanged: (value) {
-                              notifier.updateCity(value ?? '');
-                            },*/
-                            onChanged: (value) {
-                              _markChanged();
-                              notifier.updateCity(value ?? '');
-                            },
-                            value: formState.city,
-                            isRequired: true,
+                          label: 'State',
+                          hint: 'Select State',
+                          icon: Icons.map_outlined,
+                          items: states,
+                          hintText: 13,
+                          validator: (value) =>
+                              Validator.validate(value, "Select State"),
+                          onChanged: (value) {
+                            _markChanged();
+                            notifier.updateStateName(value ?? '');
+                          },
+                          value: formState.state,
+                          isRequired: true,
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        _AppDropdownField(
+                          key: ValueKey(
+                            'city_${formState.city}_$_resetCounter',
                           ),
+                          label: 'City',
+                          hint: 'Select City',
+                          icon: Icons.location_on_outlined,
+                          items: cities,
+                          hintText: 13,
+                          maxDropdownHeight: 260,
+                          validator: (value) =>
+                              Validator.validate(value, "Select City"),
+                          onChanged: (value) {
+                            _markChanged();
+                            notifier.updateCity(value ?? '');
+                          },
+                          value: formState.city,
+                          isRequired: true,
                         ),
 
                         const SizedBox(height: 10),
@@ -710,8 +761,16 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
                                     ? "Apartment updated successfully"
                                     : "Apartment added successfully",
                               );
-                              if (widget.isEdit) {
+                              /* if (widget.isEdit) {
                                 Navigator.pop(context, true);
+                              }*/
+                              if (widget.isEdit) {
+                                await widget.onApartmentUpdated?.call();
+
+                                if (!mounted) return;
+
+                                Navigator.pop(context, true);
+                                return;
                               } else {
                                 await ref
                                     .read(
@@ -894,7 +953,7 @@ class _AppTextField extends StatelessWidget {
   }
 }
 
-class _AppDropdownField extends StatelessWidget {
+class _AppDropdownField extends StatefulWidget {
   final String label;
   final String hint;
   final bool isRequired;
@@ -904,6 +963,7 @@ class _AppDropdownField extends StatelessWidget {
   final List<String> items;
   final ValueChanged<String?>? onChanged;
   final String? Function(String?)? validator;
+  final double maxDropdownHeight;
 
   const _AppDropdownField({
     super.key,
@@ -916,51 +976,159 @@ class _AppDropdownField extends StatelessWidget {
     required this.items,
     this.onChanged,
     this.validator,
+    this.maxDropdownHeight = 240,
   });
+
+  @override
+  State<_AppDropdownField> createState() => _AppDropdownFieldState();
+}
+
+class _AppDropdownFieldState extends State<_AppDropdownField> {
+  bool _isOpen = false;
 
   @override
   Widget build(BuildContext context) {
     final selectedValue =
-        value != null && value!.trim().isNotEmpty && items.contains(value)
-        ? value
+        widget.value != null &&
+            widget.value!.trim().isNotEmpty &&
+            widget.items.contains(widget.value)
+        ? widget.value
         : null;
 
     return _FieldLabelWrapper(
-      label: label,
-      isRequired: isRequired,
-      child: DropdownButtonFormField<String>(
-        key: ValueKey('${label}_${selectedValue ?? ""}'),
-        value: selectedValue,
-        hint: Text(
-          hint,
-          style: TextStyle(
-            fontSize: hintText ?? 14,
-            color: AppColors.textGrey,
-            fontWeight: FontWeight.w400,
-          ),
-        ),
-        validator: validator,
-        isExpanded: true,
-        icon: const Icon(
-          Icons.keyboard_arrow_down_rounded,
-          color: AppColors.textGrey,
-        ),
-        decoration: _inputDecoration(
-          hint: hint,
-          hintText: hintText ?? 5,
-          icon: icon,
-        ),
-        items: items.map((item) {
-          return DropdownMenuItem<String>(
-            value: item,
-            child: Text(
-              item,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-            ),
+      label: widget.label,
+      isRequired: widget.isRequired,
+      child: FormField<String>(
+        initialValue: selectedValue,
+        validator: widget.validator,
+        builder: (field) {
+          final hasError = field.errorText != null;
+          final hasValue = selectedValue != null;
+
+          final shouldShowRedBorder = hasError || _isOpen || hasValue;
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              InkWell(
+                borderRadius: BorderRadius.circular(9),
+                onTap: () {
+                  FocusScope.of(context).unfocus();
+
+                  setState(() {
+                    _isOpen = !_isOpen;
+                  });
+                },
+                child: InputDecorator(
+                  decoration: _inputDecoration(
+                    hint: widget.hint,
+                    hintText: widget.hintText ?? 13,
+                    icon: widget.icon,
+                    suffix: Icon(
+                      _isOpen
+                          ? Icons.keyboard_arrow_up_rounded
+                          : Icons.keyboard_arrow_down_rounded,
+                      color: const Color(0xff111827),
+                      size: 28,
+                    ),
+                  ).copyWith(errorText: field.errorText),
+                  child: Text(
+                    selectedValue ?? widget.hint,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: widget.hintText ?? 13,
+                      color: hasValue
+                          ? AppColors.textGrey
+                          : Colors.grey.shade500,
+                      fontWeight: hasValue ? FontWeight.w700 : FontWeight.w400,
+                    ),
+                  ),
+                ),
+              ),
+
+              if (_isOpen) ...[
+                const SizedBox(height: 8),
+
+                Container(
+                  width: double.infinity,
+                  constraints: BoxConstraints(
+                    maxHeight: widget.maxDropdownHeight,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(9),
+                    border: Border.all(color: Colors.grey.shade300),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.06),
+                        blurRadius: 16,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: widget.items.isEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 18,
+                          ),
+                          child: Text(
+                            "No options available",
+                            style: TextStyle(
+                              color: Colors.grey.shade500,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        )
+                      : ListView.builder(
+                          shrinkWrap: true,
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          itemCount: widget.items.length,
+                          itemBuilder: (context, index) {
+                            final item = widget.items[index];
+                            final isSelected = item == selectedValue;
+
+                            return InkWell(
+                              onTap: () {
+                                field.didChange(item);
+                                widget.onChanged?.call(item);
+
+                                setState(() {
+                                  _isOpen = false;
+                                });
+                              },
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 13,
+                                ),
+                                color: isSelected
+                                    ? const Color(0xffF3F4F6)
+                                    : Colors.white,
+                                child: Text(
+                                  item,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: const Color(0xff111827),
+                                    fontSize: 14,
+                                    fontWeight: isSelected
+                                        ? FontWeight.w800
+                                        : FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ],
           );
-        }).toList(),
-        onChanged: onChanged,
+        },
       ),
     );
   }
@@ -1030,10 +1198,6 @@ InputDecoration _inputDecoration({
     filled: true,
     fillColor: Colors.white,
     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
-    /*border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(9),
-      borderSide:  BorderSide(color: Colors.black45),
-    ),*/
     border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(9),

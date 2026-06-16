@@ -236,6 +236,7 @@ class _KanbanBoardScreenState extends ConsumerState<KanbanBoardScreen> {
   void _openDealDetails(KanbanDeal deal) {
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) {
@@ -900,7 +901,6 @@ class StageChevronStepper extends StatelessWidget {
   Widget build(BuildContext context) {
     const double itemWidth = 138;
     const double itemHeight = 43;
-    //const double overlap = 15;
     const double gap = 4;
 
     final totalWidth = stages.isEmpty
@@ -1063,11 +1063,11 @@ class StageChevronPainter extends CustomPainter {
     const double arrow = 14;
 
     final path = Path()
-      ..moveTo(0, 0) // left top straight
+      ..moveTo(0, 0)
       ..lineTo(size.width - arrow, 0)
-      ..lineTo(size.width, size.height / 2) // right arrow point
+      ..lineTo(size.width, size.height / 2)
       ..lineTo(size.width - arrow, size.height)
-      ..lineTo(0, size.height) // left bottom straight
+      ..lineTo(0, size.height)
       ..close();
 
     final fillPaint = Paint()
@@ -1147,7 +1147,6 @@ class KanbanColumn extends StatelessWidget {
       builder: (context, candidateData, rejectedData) {
         return Container(
           decoration: BoxDecoration(
-            //   color: stage.bgColor.withOpacity(0.55),
             borderRadius: BorderRadius.circular(18),
             border: Border.all(color: stage.color.withOpacity(0.16), width: 1),
           ),
@@ -1207,7 +1206,6 @@ class KanbanColumn extends StatelessWidget {
                       onDragUpdate: (position) {
                         final state = context
                             .findAncestorStateOfType<_KanbanBoardScreenState>();
-
                         state?._autoScrollWhileDragging(position);
                       },
                     );
@@ -1240,12 +1238,8 @@ class KanbanDeal {
   final String stageId;
   final String companyName;
   final String apartmentName;
-  final String apartmentLocation;
-  final String totalUnits;
   final String eventName;
   final String eventDate;
-  final String guests;
-  //final String setupStyle;
   final String customerName;
   final String phone;
   final String email;
@@ -1253,7 +1247,6 @@ class KanbanDeal {
   final String ownerName;
   final String createdAt;
   final String createdBy;
-  final List<OrderHistory> orderHistory;
 
   const KanbanDeal({
     required this.id,
@@ -1261,75 +1254,30 @@ class KanbanDeal {
     required this.stageId,
     required this.companyName,
     required this.apartmentName,
-    required this.apartmentLocation,
-    required this.totalUnits,
     required this.eventName,
     required this.eventDate,
-    required this.guests,
-    //required this.setupStyle,
     required this.customerName,
     required this.phone,
     required this.email,
     required this.value,
     required this.ownerName,
     required this.createdAt,
-    required this.createdBy,
-    required this.orderHistory,
+    required this.createdBy
   });
 
   factory KanbanDeal.fromBooking(Booking booking) {
-    String formatDate(DateTime? date) {
-      if (date == null) return "-";
-
-      const months = [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ];
-
-      return "${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} ${date.year}";
-    }
-
-    final apartment = booking.apartmentDetails;
-    final event = booking.eventDetails;
     final customer = booking.customerDetails;
-
-    final firstSchedule =
-        booking.dailySchedule != null && booking.dailySchedule!.isNotEmpty
-        ? booking.dailySchedule!.first
-        : null;
-
-    final locationText = [
-      apartment?.location,
-      apartment?.city,
-    ].where((e) => e != null && e.toString().trim().isNotEmpty).join(", ");
 
     return KanbanDeal(
       id: booking.id ?? "",
       orderId: booking.orderId ?? "",
       stageId: (booking.orderStatus ?? 1).toString(),
       companyName: customer?.brandOrCompanyName ?? "-",
-      apartmentName: apartment?.apartmentName ?? booking.apartmentName ?? "-",
-      apartmentLocation: locationText.isEmpty ? "-" : locationText,
-      totalUnits: booking.sqfet != null ? "${booking.sqfet} Sq.ft" : "-",
-      eventName: event?.eventName ?? booking.eventName ?? "-",
+      apartmentName: booking.apartmentName ?? "-",
+      eventName: booking.eventName ?? "-",
       eventDate: booking.fromDate == null && booking.toDate == null
           ? "-"
           : "${formatDate(booking.fromDate)} - ${formatDate(booking.toDate)}",
-
-      guests: "${booking.promoterCount ?? 0} Promoters",
-   /*   setupStyle: booking.additionalNotes?.trim().isNotEmpty == true
-          ? booking.additionalNotes!
-          : "-",*/
       customerName: customer?.contactPersonName ?? "-",
       phone: customer?.contactPersonPhoneNumber ?? "-",
       email: customer?.email ?? "-",
@@ -1339,19 +1287,6 @@ class KanbanDeal {
           : "A",
       createdAt: Helpers().formatDateTime(booking.createdAt.toString()),
       createdBy: booking.createdBy ?? "",
-      orderHistory:
-          booking.orderHistory?.map((e) {
-            return OrderHistory(
-              fromStatusText: e.fromStatusText ?? "",
-              toStatusText: e.toStatusText ?? "",
-              changedBy: e.changedBy ?? "-",
-              changedAt: Helpers().formatDateTime(
-                e.changedAt?.toString() ?? "",
-              ),
-              additionalNotes: e.additionalNotes ?? "",
-            );
-          }).toList() ??
-          [],
     );
   }
 }
@@ -1361,4 +1296,25 @@ class DetailRow {
   final String value;
 
   DetailRow(this.label, this.value);
+}
+
+String formatDate(DateTime? date) {
+  if (date == null) return "-";
+
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+
+  return "${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} ${date.year}";
 }

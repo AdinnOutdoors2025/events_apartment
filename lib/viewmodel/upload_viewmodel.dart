@@ -62,6 +62,7 @@ class UploadState {
 class UploadViewModel extends Notifier<UploadState> {
   final ApiService apiService = ApiService();
   final ScrollController scrollController = ScrollController();
+  static const int maxExcelSizeInBytes = 5 * 1024 * 1024;
 
   @override
   UploadState build() {
@@ -87,17 +88,30 @@ class UploadViewModel extends Notifier<UploadState> {
 
   Future<File?> pickExcelFile() async {
     try {
-      FilePickerResult? result = await FilePicker.pickFiles(
+      final FilePickerResult? result = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['xlsx', 'xls'],
       );
 
-      if (result != null && result.files.single.path != null) {
-
-        final file = File(result.files.single.path!);
-        state = state.copyWith(selectedFile: () => file, fileName: result.files.single.name,);
-        return file;
+      if (result == null || result.files.single.path == null) {
+        return null;
       }
+      final pickedFile = result.files.single;
+      final file = File(pickedFile.path!);
+
+      final fileSize = pickedFile.size;
+      if (fileSize > maxExcelSizeInBytes) {
+        AppToast.showError("Excel file size must be below 5MB");
+
+        state = state.copyWith(selectedFile: () => null, fileName: null);
+
+        return null;
+      }
+      state = state.copyWith(
+        selectedFile: () => file,
+        fileName: pickedFile.name,
+      );
+      return file;
     } catch (e) {
       AppToast.showError(e.toString());
       if (kDebugMode) {

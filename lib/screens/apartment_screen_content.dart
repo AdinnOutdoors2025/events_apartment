@@ -294,48 +294,55 @@ class FilterBottomSheet extends ConsumerWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       child: SafeArea(
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
-              child: Column(
-                children: [
-                  Container(
-                    width: 54,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFD8D8D8),
-                      borderRadius: BorderRadius.circular(20),
+        top: false,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 54,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD8D8D8),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      const Expanded(
-                        child: Center(
-                          child: Text(
-                            'Filter Apartments',
-                            style: TextStyle(
-                              color: AppColors.red,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800,
+
+                    const SizedBox(height: 20),
+
+                    Row(
+                      children: [
+                        const Expanded(
+                          child: Center(
+                            child: Text(
+                              'Filter Apartments',
+                              style: TextStyle(
+                                color: AppColors.red,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      GestureDetector(
-                        onTap: () => Navigator.pop(context),
-                        child: const Icon(Icons.close_rounded, size: 28),
-                      ),
-                    ],
-                  ),
-                ],
+                        GestureDetector(
+                          onTap: () => Navigator.pop(context),
+                          child: const Icon(Icons.close_rounded, size: 28),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-            Expanded(
-              child: SingleChildScrollView(
+
+              Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     CustomDropdown(
                       title: 'Apartment Group Name',
@@ -376,155 +383,160 @@ class FilterBottomSheet extends ConsumerWidget {
                       toggleDropdown: viewModel.toggleDropdown,
                     ),
 
-                    const SizedBox(height: 15),
+                    if (state.maxCampaignRent > state.minCampaignRent) ...[
+                      const SizedBox(height: 15),
 
-                    Builder(
-                      builder: (context) {
-                        final range = state.campaignPriceRange;
-                        final isChanged =
-                            range.start.round() !=
-                                state.minCampaignRent.round() ||
-                            range.end.round() != state.maxCampaignRent.round();
+                      Builder(
+                        builder: (context) {
+                          final range = state.campaignPriceRange;
 
-                        return RangeFilterTile(
-                          title: 'Per Day Rent Range (₹ / Day)',
-                          values: range,
-                          min: state.minCampaignRent,
-                          max: state.maxCampaignRent,
-                          step: 1000,
-                          isChanged: isChanged,
+                          final isChanged =
+                              range.start.round() !=
+                                  state.minCampaignRent.round() ||
+                              range.end.round() !=
+                                  state.maxCampaignRent.round();
 
-                          startText: Helpers().formatIndianAmount(
-                            range.start.round(),
-                          ),
-                          endText: Helpers().formatIndianAmount(
-                            range.end.round(),
-                          ),
-                          minText: Helpers().formatIndianAmount(
-                            state.minCampaignRent.round(),
-                          ),
-                          maxText: Helpers().formatIndianAmount(
-                            state.maxCampaignRent.round(),
-                          ),
-                          onChanged: (value) {
-                            viewModel.setCampaignPriceRange(value);
-                          },
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 15),
-                    Builder(
-                      builder: (context) {
-                        final range = state.tgValueRange;
-                        final isChanged =
-                            range.start.round() != state.minTG.round() ||
-                            range.end.round() != state.maxTG.round();
+                          return RangeFilterTile(
+                            title: 'Per Day Rent Range (₹ / Day)',
+                            values: range,
+                            min: state.minCampaignRent,
+                            max: state.maxCampaignRent,
+                            step: 1000,
+                            isChanged: isChanged,
+                            startText: Helpers().formatIndianAmount(
+                              range.start.round(),
+                            ),
+                            endText: Helpers().formatIndianAmount(
+                              range.end.round(),
+                            ),
+                            minText: Helpers().formatIndianAmount(
+                              state.minCampaignRent.round(),
+                            ),
+                            maxText: Helpers().formatIndianAmount(
+                              state.maxCampaignRent.round(),
+                            ),
+                            onChanged: viewModel.setCampaignPriceRange,
+                          );
+                        },
+                      ),
+                    ],
 
-                        return RangeFilterTile(
-                          title: 'TG Value Range (₹ / Day)',
-                          values: range,
-                          min: state.minTG,
-                          max: state.maxTG,
-                          step: 1000,
-                          isChanged: isChanged,
-                          startText: Helpers().formatIndianAmount(
-                            range.start.round(),
-                          ),
-                          endText: Helpers().formatIndianAmount(
-                            range.end.round(),
-                          ),
-                          minText: Helpers().formatIndianAmount(
-                            state.minTG.round(),
-                          ),
-                          maxText: Helpers().formatIndianAmount(
-                            state.maxTG.round(),
-                          ),
-                          onChanged: (value) {
-                            viewModel.setTGValueRange(value);
-                          },
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 15),
+                    if (state.maxTG > state.minTG) ...[
+                      const SizedBox(height: 15),
+
+                      Builder(
+                        builder: (context) {
+                          final range = state.tgValueRange;
+
+                          final isChanged =
+                              range.start.round() != state.minTG.round() ||
+                              range.end.round() != state.maxTG.round();
+
+                          return RangeFilterTile(
+                            title: 'TG Value Range (₹ / Day)',
+                            values: range,
+                            min: state.minTG,
+                            max: state.maxTG,
+                            step: 1000,
+                            isChanged: isChanged,
+                            startText: Helpers().formatIndianAmount(
+                              range.start.round(),
+                            ),
+                            endText: Helpers().formatIndianAmount(
+                              range.end.round(),
+                            ),
+                            minText: Helpers().formatIndianAmount(
+                              state.minTG.round(),
+                            ),
+                            maxText: Helpers().formatIndianAmount(
+                              state.maxTG.round(),
+                            ),
+                            onChanged: viewModel.setTGValueRange,
+                          );
+                        },
+                      ),
+                    ],
                   ],
                 ),
               ),
-            ),
 
-            Padding(
-              padding: const EdgeInsets.only(
-                left: 10,
-                right: 10,
-                top: 10,
-                bottom: 4,
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: SizedBox(
-                      height: 45,
-                      child: OutlinedButton(
-                        onPressed: () async {
-                          await viewModel.clearFiltersAndFetch();
-                          Navigator.pop(context);
-                        },
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.red,
-                          side: const BorderSide(
-                            color: AppColors.red,
-                            width: 1.5,
+              const SizedBox(height: 20),
+
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 45,
+                        child: OutlinedButton(
+                          onPressed: () async {
+                            await viewModel.clearFiltersAndFetch();
+
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                            }
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.red,
+                            side: const BorderSide(
+                              color: AppColors.red,
+                              width: 1.5,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: const Text(
-                          'Reset',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w800,
+                          child: const Text(
+                            'Reset',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: SizedBox(
-                      height: 45,
-                      child: OutlinedButton(
-                        onPressed: () async {
-                          await viewModel.applyFilterFromSheet();
 
-                          if (context.mounted) {
-                            Navigator.maybePop(context);
-                          }
-                        },
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          backgroundColor: AppColors.red,
-                          side: const BorderSide(
-                            color: AppColors.red,
-                            width: 1.5,
+                    const SizedBox(width: 14),
+
+                    Expanded(
+                      child: SizedBox(
+                        height: 45,
+                        child: OutlinedButton(
+                          onPressed: () async {
+                            await viewModel.applyFilterFromSheet();
+
+                            if (context.mounted) {
+                              Navigator.maybePop(context);
+                            }
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            backgroundColor: AppColors.red,
+                            side: const BorderSide(
+                              color: AppColors.red,
+                              width: 1.5,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: const Text(
-                          'Apply Filters',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w800,
+                          child: const Text(
+                            'Apply Filters',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -781,7 +793,7 @@ class ApartmentRateCard extends ConsumerWidget {
                       ),
                     ),
                     InkWell(
-                      onTap: () async {
+                      /*                      onTap: () async {
                         viewModel.searchFocusNode.unfocus();
                         final result = await Navigator.push(
                           context,
@@ -793,11 +805,41 @@ class ApartmentRateCard extends ConsumerWidget {
                           ),
                         );
 
-                        if (result == true) {
+                       */
+                      /* if (result == true) {
                           ref
                               .read(apartmentFamilyProvider(null).notifier)
                               .getApartments();
+                        }*/
+                      /*
+                        if (!context.mounted) return;
+
+                        if (result == true) {
+                          await ref
+                              .read(apartmentFamilyProvider(null).notifier)
+                              .refreshAfterApartmentEdit();
                         }
+                      }*/
+                      onTap: () async {
+                        viewModel.searchFocusNode.unfocus();
+
+                        final apartmentNotifier = ref.read(
+                          apartmentFamilyProvider(null).notifier,
+                        );
+
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => AddApartmentScreen(
+                              apartment: apartment,
+                              showAppBar: true,
+                              onApartmentUpdated: () {
+                                return apartmentNotifier
+                                    .refreshAfterApartmentEdit();
+                              },
+                            ),
+                          ),
+                        );
                       },
                       borderRadius: BorderRadius.circular(12),
                       child: Container(
