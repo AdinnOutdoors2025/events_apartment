@@ -172,14 +172,6 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
     }
   }
 
-  /*final List<String> cities = const [
-    'Chennai',
-    'Madurai',
-    'Coimbatore',
-    'Trichy',
-    'Salem',
-    'Tirunelveli',
-  ];*/
   final List<String> cities = const [
     'Ariyalur',
     'Avadi',
@@ -765,13 +757,19 @@ class _AddApartmentScreenState extends ConsumerState<AddApartmentScreen> {
                                 Navigator.pop(context, true);
                               }*/
                               if (widget.isEdit) {
+                                if (!mounted) return;
+
+                                Navigator.pop(context, true);
+                                return;
+                              }
+                              /*if (widget.isEdit) {
                                 await widget.onApartmentUpdated?.call();
 
                                 if (!mounted) return;
 
                                 Navigator.pop(context, true);
                                 return;
-                              } else {
+                              }*/ else {
                                 await ref
                                     .read(
                                       apartmentFamilyProvider(null).notifier,

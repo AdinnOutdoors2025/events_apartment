@@ -771,13 +771,7 @@ class ApartmentRateCard extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
-                      child: /*Text(
-                        apartment.apartmentName ?? "",
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),*/ Padding(
+                      child:  Padding(
                         padding: const EdgeInsets.only(bottom: 2),
                         child: HighlightText(
                           text: apartment.apartmentName ?? '-',
@@ -811,21 +805,13 @@ class ApartmentRateCard extends ConsumerWidget {
                               .read(apartmentFamilyProvider(null).notifier)
                               .getApartments();
                         }*/
-                      /*
-                        if (!context.mounted) return;
-
-                        if (result == true) {
-                          await ref
-                              .read(apartmentFamilyProvider(null).notifier)
-                              .refreshAfterApartmentEdit();
-                        }
-                      }*/
-                      onTap: () async {
+                     /* onTap: () async {
                         viewModel.searchFocusNode.unfocus();
 
                         final apartmentNotifier = ref.read(
                           apartmentFamilyProvider(null).notifier,
                         );
+
 
                         await Navigator.push(
                           context,
@@ -840,6 +826,27 @@ class ApartmentRateCard extends ConsumerWidget {
                             ),
                           ),
                         );
+                      },*/
+                      onTap: () async {
+                        viewModel.searchFocusNode.unfocus();
+
+                        final updated = await Navigator.push<bool>(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => AddApartmentScreen(
+                              apartment: apartment,
+                              showAppBar: true,
+                            ),
+                          ),
+                        );
+
+                        if (updated == true) {
+                          await ref
+                              .read(
+                            apartmentFamilyProvider(viewModel.state.currentSessionId).notifier,
+                          )
+                              .refreshAfterApartmentEdit();
+                        }
                       },
                       borderRadius: BorderRadius.circular(12),
                       child: Container(

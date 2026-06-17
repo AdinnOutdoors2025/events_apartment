@@ -221,7 +221,7 @@ class ApartmentFormNotifier extends StateNotifier<ApartmentFormState> {
 
     if (kDebugMode) {
       print("SAVE MODE => ${isEdit ? 'EDIT' : 'ADD'}");
-      print("APARTMENT ID SENT => ${body["apartmentId"]}");
+      print("APARTMENT ID SENT => ${body["id"]}");
       print("BODY => $body");
     }
 
