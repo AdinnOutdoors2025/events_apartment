@@ -313,9 +313,9 @@ class FilterBottomSheet extends ConsumerWidget {
                       ),
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 5),
 
-                    Row(
+                    /*                    Row(
                       children: [
                         const Expanded(
                           child: Center(
@@ -334,6 +334,38 @@ class FilterBottomSheet extends ConsumerWidget {
                           child: const Icon(Icons.close_rounded, size: 28),
                         ),
                       ],
+                    )*/
+                    SizedBox(
+                      height: 35,
+                      width: double.infinity,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          const Center(
+                            child: Text(
+                              'Filter Apartments',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: AppColors.red,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+
+                          Positioned(
+                            right: 0,
+                            child: GestureDetector(
+                              onTap: () => Navigator.pop(context),
+                              child: const Icon(
+                                Icons.close_rounded,
+                                size: 30,
+                                color: Color(0xff111827),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -771,7 +803,7 @@ class ApartmentRateCard extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
-                      child:  Padding(
+                      child: Padding(
                         padding: const EdgeInsets.only(bottom: 2),
                         child: HighlightText(
                           text: apartment.apartmentName ?? '-',
@@ -787,46 +819,6 @@ class ApartmentRateCard extends ConsumerWidget {
                       ),
                     ),
                     InkWell(
-                      /*                      onTap: () async {
-                        viewModel.searchFocusNode.unfocus();
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => AddApartmentScreen(
-                              apartment: apartment,
-                              showAppBar: true,
-                            ),
-                          ),
-                        );
-
-                       */
-                      /* if (result == true) {
-                          ref
-                              .read(apartmentFamilyProvider(null).notifier)
-                              .getApartments();
-                        }*/
-                     /* onTap: () async {
-                        viewModel.searchFocusNode.unfocus();
-
-                        final apartmentNotifier = ref.read(
-                          apartmentFamilyProvider(null).notifier,
-                        );
-
-
-                        await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => AddApartmentScreen(
-                              apartment: apartment,
-                              showAppBar: true,
-                              onApartmentUpdated: () {
-                                return apartmentNotifier
-                                    .refreshAfterApartmentEdit();
-                              },
-                            ),
-                          ),
-                        );
-                      },*/
                       onTap: () async {
                         viewModel.searchFocusNode.unfocus();
 
@@ -843,8 +835,10 @@ class ApartmentRateCard extends ConsumerWidget {
                         if (updated == true) {
                           await ref
                               .read(
-                            apartmentFamilyProvider(viewModel.state.currentSessionId).notifier,
-                          )
+                                apartmentFamilyProvider(
+                                  viewModel.state.currentSessionId,
+                                ).notifier,
+                              )
                               .refreshAfterApartmentEdit();
                         }
                       },
@@ -907,15 +901,6 @@ class ApartmentRateCard extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 11),
-
-                /*RateInfoRow(
-                  label: 'TG Value',
-                  value:
-                      (apartment.fromTGValues == 0 && apartment.toTGValues == 0)
-                      ? '-'
-                      : "${Helpers().formatIndianAmount(apartment.fromTGValues)} - "
-                            "${Helpers().formatIndianAmount(apartment.toTGValues)}",
-                ),*/
                 RateInfoRow(
                   label: 'TG Value',
                   value:
@@ -926,12 +911,7 @@ class ApartmentRateCard extends ConsumerWidget {
                   searchText: viewModel.searchController.text,
                 ),
                 const SizedBox(height: 7),
-                /* RateInfoRow(
-                  label: 'Total Residences',
-                  value: Helpers().numberFormatter.format(
-                    apartment.residencyCount ?? 0,
-                  ),
-                ),*/
+
                 RateInfoRow(
                   label: 'Total Residences',
                   value: Helpers().numberFormatter.format(
@@ -954,9 +934,6 @@ class ApartmentRateCard extends ConsumerWidget {
 
                     Flexible(
                       child: HighlightText(
-                        /*   text:
-                            "₹${Helpers().numberFormatter.format(apartment.perDayRent ?? 0)}/day",
-                        searchText: viewModel.searchController.text,*/
                         text: "₹${Helpers().numberFormatter.format(rent)}/day",
                         searchText: _normalizeSearch(
                           viewModel.searchController.text,

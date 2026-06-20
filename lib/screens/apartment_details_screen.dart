@@ -116,6 +116,17 @@ class _OverviewTab extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if ((apartment.apartmentGroupName ?? '').trim().isNotEmpty) ...[
+          Text(
+            apartment.apartmentGroupName!,
+            style: const TextStyle(
+              color: AppColors.textGrey,
+              fontSize: 14,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 5),
+        ],
         Text(
           apartment.apartmentName ?? '-',
           style: const TextStyle(

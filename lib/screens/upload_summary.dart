@@ -1,4 +1,5 @@
 import 'package:apartment_project/screens/upload_apartment_screen.dart';
+import 'package:apartment_project/theme/app_images.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
@@ -17,7 +18,6 @@ class UploadSummary extends ConsumerWidget {
   final String? sessionId;
   final Session? recentUpload;
 
-
   const UploadSummary({
     super.key,
     required this.isNewUpload,
@@ -29,22 +29,6 @@ class UploadSummary extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-   /* final apartmentState = ref.watch(apartmentFamilyProvider(sessionId));
-    if (!isNewUpload && apartmentState.isLoading) {
-      return const Scaffold(
-        backgroundColor: Colors.white,
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-*/
-   /* final state = ref.watch(
-      uploadSummaryFamilyProvider({
-        "isNewUpload": isNewUpload,
-        "uploadData": uploadData,
-       // "listData": apartmentState.apartmentData,
-        "recentUpload": recentUpload,
-      }),
-    );*/
     final state = ref.watch(
       uploadSummaryFamilyProvider(
         UploadSummaryArgs(
@@ -142,8 +126,8 @@ class UploadSummary extends ConsumerWidget {
                 ),
                 child: Row(
                   children: [
-                    Image.network(
-                      'https://cdn-icons-png.flaticon.com/512/732/732220.png',
+                    Image.asset(
+                      AppImages.excelFile,
                       height: 40,
                     ),
                     const SizedBox(width: 14),

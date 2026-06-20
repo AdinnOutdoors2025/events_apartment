@@ -67,45 +67,18 @@ class Booking {
   String? apartmentId;
   String? eventId;
 
-  // ApartmentDetails? apartmentDetails;
-  // EventDetails? eventDetails;
   DateTime? fromDate;
   DateTime? toDate;
   int? daysOfEvent;
 
-  // List<DailySchedule>? dailySchedule;
-  // int? promoterRequired;
-  // int? promoterCount;
-  // List<Promoter>? promoters;
   CustomerDetails? customerDetails;
 
-  // int? discountType;
-  // int? discountPercentage;
-  // int? finalAmount;
-  // int? sqfet;
-  // int? apartmentAmount;
-  //int? sqfetAmount;
-  // int? eventAmount;
-  // int? promoterTotal;
-  // int? subTotal;
-  // int? discountAmount;
-  // int? taxableAmount;
-  // int? gstAmount;
   int? totalAmount;
   int? orderStatus;
 
-  // String? additionalNotes;
-  // String? closeLossReason;
-  //  dynamic poDocument;
-  //Document? document;
-  //Document? voiceNote;
-  //OrderNote? orderNote;
-  //bool? isMailSent;
-  //dynamic mailSentAt;
   String? createdBy;
   String? updatedBy;
 
-  //List<OrderHistory>? orderHistory;
   DateTime? createdAt;
   DateTime? updatedAt;
 
@@ -194,123 +167,6 @@ class Booking {
   };
 }
 
-/*
-class OrderHistory {
-  final int? fromStatus;
-  final String? fromStatusText;
-  final int? toStatus;
-  final String? toStatusText;
-  final String? changedBy;
-  final String? changedAt;
-  final String? additionalNotes;
-  final DocumentModel? poDocument;
-  final DocumentModel? statusDocument;
-  final DocumentModel? voiceDocument;
-
-  OrderHistory({
-    this.fromStatus,
-    this.fromStatusText,
-    this.toStatus,
-    this.toStatusText,
-    this.changedBy,
-    this.changedAt,
-    this.additionalNotes,
-    this.poDocument,
-    this.statusDocument,
-    this.voiceDocument,
-  });
-
-  factory OrderHistory.fromJson(Map<String, dynamic> json) {
-    return OrderHistory(
-      fromStatus: json['fromStatus'],
-      fromStatusText: json['fromStatusText'],
-      toStatus: json['toStatus'],
-      toStatusText: json['toStatusText'],
-      changedBy: json['changedBy'],
-      changedAt: json['changedAt'],
-      additionalNotes: json['additionalNotes'],
-      poDocument: json['poDocument'] != null
-          ? DocumentModel.fromJson(json['poDocument'])
-          : null,
-      statusDocument: json['statusDocument'] != null
-          ? DocumentModel.fromJson(json['statusDocument'])
-          : null,
-      voiceDocument: json['voiceDocument'] != null
-          ? DocumentModel.fromJson(json['voiceDocument'])
-          : null,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'fromStatus': fromStatus,
-      'fromStatusText': fromStatusText,
-      'toStatus': toStatus,
-      'toStatusText': toStatusText,
-      'changedBy': changedBy,
-      'changedAt': changedAt,
-      'additionalNotes': additionalNotes,
-      'poDocument': poDocument?.toJson(),
-      'statusDocument': statusDocument?.toJson(),
-      'voiceDocument': voiceDocument?.toJson(),
-    };
-  }
-}
-*/
-
-/*class DocumentModel {
-  final String? uploadedAt;
-
-  DocumentModel({this.uploadedAt});
-
-  factory DocumentModel.fromJson(Map<String, dynamic> json) {
-    return DocumentModel(uploadedAt: json['uploadedAt']);
-  }
-
-  Map<String, dynamic> toJson() {
-    return {'uploadedAt': uploadedAt};
-  }
-}*/
-
-/*
-class ApartmentDetails {
-  String? id;
-  String? apartmentName;
-  String? city;
-  String? location;
-  int? perDayRent;
-  String? contactPersonPhone;
-
-  ApartmentDetails({
-    this.id,
-    this.apartmentName,
-    this.city,
-    this.location,
-    this.perDayRent,
-    this.contactPersonPhone,
-  });
-
-  factory ApartmentDetails.fromJson(Map<String, dynamic> json) =>
-      ApartmentDetails(
-        id: json["_id"],
-        apartmentName: json["apartmentName"],
-        city: json["city"],
-        location: json["location"],
-        perDayRent: json["perDayRent"],
-        contactPersonPhone: json["contactPersonPhone"],
-      );
-
-  Map<String, dynamic> toJson() => {
-    "_id": id,
-    "apartmentName": apartmentName,
-    "city": city,
-    "location": location,
-    "perDayRent": perDayRent,
-    "contactPersonPhone": contactPersonPhone,
-  };
-}
-*/
-
 class CustomerDetails {
   int? customerType;
   int? gstNumber;
@@ -361,71 +217,6 @@ class CustomerDetails {
 }
 
 /*
-class DailySchedule {
-  int? days;
-  String? fromTime;
-  String? toTime;
-  String? notes;
-
-  DailySchedule({this.days, this.fromTime, this.toTime, this.notes});
-
-  factory DailySchedule.fromJson(Map<String, dynamic> json) => DailySchedule(
-    days: json["days"],
-    fromTime: json["fromTime"],
-    toTime: json["toTime"],
-    notes: json["notes"],
-  );
-
-  Map<String, dynamic> toJson() => {
-    "days": days,
-    "fromTime": fromTime,
-    "toTime": toTime,
-    "notes": notes,
-  };
-}
-*/
-
-/*
-class Document {
-  DateTime? uploadedAt;
-
-  Document({this.uploadedAt});
-
-  factory Document.fromJson(Map<String, dynamic> json) => Document(
-    uploadedAt: json["uploadedAt"] == null
-        ? null
-        : DateTime.parse(json["uploadedAt"]),
-  );
-
-  Map<String, dynamic> toJson() => {
-    "uploadedAt": uploadedAt?.toIso8601String(),
-  };
-}
-*/
-
-/*
-class EventDetails {
-  String? id;
-  String? eventName;
-  int? amount;
-
-  EventDetails({this.id, this.eventName, this.amount});
-
-  factory EventDetails.fromJson(Map<String, dynamic> json) => EventDetails(
-    id: json["_id"],
-    eventName: json["eventName"],
-    amount: json["amount"],
-  );
-
-  Map<String, dynamic> toJson() => {
-    "_id": id,
-    "eventName": eventName,
-    "amount": amount,
-  };
-}
-*/
-
-/*
 class OrderNote {
   String? text;
   List<dynamic>? files;
@@ -442,52 +233,6 @@ class OrderNote {
   Map<String, dynamic> toJson() => {
     "text": text,
     "files": files == null ? [] : List<dynamic>.from(files!.map((x) => x)),
-  };
-}
-*/
-
-/*
-class Promoter {
-  String? promoterGender;
-  int? promoterPerDayCharge;
-  List<String>? promoterLanguage;
-  List<String>? promoterLookAndAppearance;
-  int? promoterAmount;
-  String? promoterId;
-
-  Promoter({
-    this.promoterGender,
-    this.promoterPerDayCharge,
-    this.promoterLanguage,
-    this.promoterLookAndAppearance,
-    this.promoterAmount,
-    this.promoterId,
-  });
-
-  factory Promoter.fromJson(Map<String, dynamic> json) => Promoter(
-    promoterGender: json["promoterGender"],
-    promoterPerDayCharge: json["promoterPerDayCharge"],
-    promoterLanguage: json["promoterLanguage"] == null
-        ? []
-        : List<String>.from(json["promoterLanguage"]!.map((x) => x)),
-    promoterLookAndAppearance: json["promoterLookAndAppearance"] == null
-        ? []
-        : List<String>.from(json["promoterLookAndAppearance"]!.map((x) => x)),
-    promoterAmount: json["promoterAmount"],
-    promoterId: json["_promoterId"],
-  );
-
-  Map<String, dynamic> toJson() => {
-    "promoterGender": promoterGender,
-    "promoterPerDayCharge": promoterPerDayCharge,
-    "promoterLanguage": promoterLanguage == null
-        ? []
-        : List<dynamic>.from(promoterLanguage!.map((x) => x)),
-    "promoterLookAndAppearance": promoterLookAndAppearance == null
-        ? []
-        : List<dynamic>.from(promoterLookAndAppearance!.map((x) => x)),
-    "promoterAmount": promoterAmount,
-    "_promoterId": promoterId,
   };
 }
 */

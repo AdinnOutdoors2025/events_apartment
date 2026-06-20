@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_images.dart';
 import '../utils/snackbar.dart';
 import '../viewmodel/add_apartment_viewmodel.dart';
 import '../viewmodel/upload_viewmodel.dart';
@@ -272,14 +273,11 @@ class _DownloadTemplateCard extends StatelessWidget {
                 height: 40,
                 width: 40,
                 decoration: BoxDecoration(
-                  color: AppColors.red.withOpacity(0.07),
+                  //   color: AppColors.red.withOpacity(0.07),
                   borderRadius: BorderRadius.circular(18),
                 ),
                 child: Center(
-                  child: Image.network(
-                    'https://cdn-icons-png.flaticon.com/512/732/732220.png',
-                    height: 25,
-                  ),
+                  child: Image.asset(AppImages.excelFile, height: 30),
                 ),
               ),
 
@@ -325,13 +323,6 @@ class _DownloadTemplateCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.red,
                   borderRadius: BorderRadius.circular(10),
-                  /*boxShadow: [
-                    BoxShadow(
-                      color: AppColors.red.withOpacity(0.25),
-                      blurRadius: 12,
-                      offset: Offset(0, 6),
-                    ),
-                  ],*/
                 ),
                 child: const Icon(
                   Icons.file_download_outlined,
@@ -369,10 +360,7 @@ class _UploadExcelCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Image.network(
-            'https://cdn-icons-png.flaticon.com/512/732/732220.png',
-            height: 80,
-          ),
+          Image.asset(AppImages.excelFile, height: 80),
 
           const SizedBox(height: 20),
 
@@ -475,10 +463,7 @@ class _RecentUploadTile extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Image.network(
-                  'https://cdn-icons-png.flaticon.com/512/732/732220.png',
-                  height: 42,
-                ),
+                Image.asset(AppImages.excelFile, height: 42),
 
                 const SizedBox(width: 14),
 

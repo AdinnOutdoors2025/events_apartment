@@ -18,12 +18,6 @@ class PipelineHistoryTab extends StatelessWidget {
     final timeline = <Map<String, dynamic>>[];
 
     for (final history in details.orderHistory ?? []) {
-      /*timeline.add({
-        "title": history.toStatusText,
-        "date": formatDate(history.changedAt),
-        "user": history.changedBy,
-        "created": false,
-      });*/
       timeline.add({
         "title":
             history.fromStatusText == "Created" || history.fromStatus == null

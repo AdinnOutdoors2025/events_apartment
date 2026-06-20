@@ -76,7 +76,8 @@ flutter:
     - assets/images/adinn_logo.png
     - assets/lottie/completed.json
     - assets/templates/apartment_template.xlsx
-    - assets/images/apartments_logo.jpeg
+    - assets/images/apartment_events_logo.png
+    - assets/images/excel-image.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
